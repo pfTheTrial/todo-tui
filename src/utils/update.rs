@@ -1,6 +1,7 @@
 pub struct UpdateInfo {
     pub current: String,
     pub latest: String,
+    #[allow(dead_code)]
     pub url: String,
     pub has_update: bool,
 }

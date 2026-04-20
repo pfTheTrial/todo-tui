@@ -34,6 +34,8 @@ pub fn get_strings() -> HashMap<&'static str, &'static str> {
     s.insert("status.paused", "PAUSADO");
     s.insert("status.due", "ATRASADA");
     s.insert("status.scheduled", "Programado");
+    s.insert("status.done", "Hecho");
+    s.insert("section.status", "Estado");
     
     s.insert("menu.settings.title", " Configuración ");
     s.insert("menu.settings.theme", "Tema");

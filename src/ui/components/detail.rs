@@ -48,7 +48,7 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
 
         lines.push(Line::from(vec![Span::raw(format!(" {}  : ", app.t("wizard.title"))), Span::styled(&task.title, Style::default().fg(theme.accent).add_modifier(Modifier::BOLD))]));
         lines.push(Line::from(vec![Span::raw(" Due    : "), Span::styled(next_rev, Style::default().fg(theme.accent_secondary))]));
-        lines.push(Line::from(vec![Span::raw(format!(" {} : ", "Status")), Span::styled(if task.review_state.is_due() { app.t("status.due") } else { app.t("status.scheduled") }, Style::default().fg(if task.review_state.is_due() { theme.error } else { theme.success }))]));
+        lines.push(Line::from(vec![Span::raw(format!(" {}   : ", app.t("section.status"))), Span::styled(if task.review_state.is_due() { app.t("status.due") } else { app.t("status.scheduled") }, Style::default().fg(if task.review_state.is_due() { theme.error } else { theme.success }))]));
         lines.push(Line::from(vec![
             Span::raw(format!(" {}   : ", app.t("section.importance"))),
             Span::styled(imp_label, Style::default().fg(imp_color).add_modifier(Modifier::BOLD)),
@@ -61,7 +61,7 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
             for sub in &task.review_subtasks {
                 let status = if sub.completed { "[✓]" } else { "[ ]" };
                 let days_left = sub.date.with_timezone(&Local).date_naive().signed_duration_since(today).num_days();
-                let dl_str = if sub.completed { "Ok".to_string() } else if days_left < 0 { format!("{}d atrás", -days_left) } else if days_left == 0 { app.t("cat.today").to_string() } else { format!("{}d", days_left) };
+                let dl_str = if sub.completed { app.t("status.done").to_string() } else if days_left < 0 { format!("{}d {}", -days_left, app.t("days.ago")) } else if days_left == 0 { app.t("cat.today").to_string() } else { format!("{}d", days_left) };
                 let format_date = sub.date.with_timezone(&Local).format("%d/%m").to_string();
                 
                 let line_str = format!("  {} {} - {} ({})", status, sub.label, format_date, dl_str);

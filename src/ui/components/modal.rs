@@ -1,5 +1,4 @@
 use ratatui::{
-
     widgets::{Block, Borders, Paragraph, Clear},
     Frame,
     text::{Line, Span},

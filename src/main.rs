@@ -37,16 +37,22 @@ fn main() -> Result<()> {
         .join("todo-tui");
     let mut app = App::new(data_dir)?;
     
-    // Startup update check
-    if let Some(info) = crate::utils::update::check_for_update() {
-        if info.has_update {
-            app.status_message = Some(format!("✨ Nova versão disponível! (v{})", info.latest));
-        }
-        app.update_info = Some(info);
+    // Startup update check — background thread so UI doesn't block on network
+    let pending_update: std::sync::Arc<std::sync::Mutex<Option<crate::utils::update::UpdateInfo>>> =
+        std::sync::Arc::new(std::sync::Mutex::new(None));
+    {
+        let pending = pending_update.clone();
+        std::thread::spawn(move || {
+            if let Some(info) = crate::utils::update::check_for_update() {
+                if let Ok(mut guard) = pending.lock() {
+                    *guard = Some(info);
+                }
+            }
+        });
     }
 
     // Run app
-    let res = run_app(&mut terminal, &mut app);
+    let res = run_app(&mut terminal, &mut app, pending_update);
 
     // Final Sync & Save on Exit
     let _ = app.save();
@@ -66,7 +72,11 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<()> {
+fn run_app<B: Backend>(
+    terminal: &mut Terminal<B>,
+    app: &mut App,
+    pending_update: std::sync::Arc<std::sync::Mutex<Option<crate::utils::update::UpdateInfo>>>,
+) -> io::Result<()> {
     let tick_rate = Duration::from_millis(1000);
     let mut last_tick = Instant::now();
     
@@ -92,8 +102,24 @@ fn run_app<B: Backend>(terminal: &mut Terminal<B>, app: &mut App) -> io::Result<
                 }
             }
             
-            // TODO: Phase 7 — aqui entrará a lógica real de sync periódico
-            // if app.settings.sync_interval_mins > 0 && app.last_sync.elapsed() >= ... { sync_all_providers(&app); }
+            // Poll the background update check (non-blocking)
+            if app.update_info.is_none() {
+                if let Ok(mut guard) = pending_update.try_lock() {
+                    if let Some(info) = guard.take() {
+                        if info.has_update {
+                            app.status_message = Some(format!(
+                                "✨ {} v{}",
+                                app.t("menu.settings.update_available"),
+                                info.latest
+                            ));
+                        }
+                        app.update_info = Some(info);
+                    }
+                }
+            }
+
+            // TODO: Phase 7 — periodic sync logic
+            // if app.settings.sync_interval_mins > 0 && app.last_sync.elapsed() >= ... { }
 
             last_tick = Instant::now();
         }

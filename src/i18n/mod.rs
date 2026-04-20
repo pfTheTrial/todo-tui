@@ -23,6 +23,7 @@ impl Language {
         vec![Language::PtBr, Language::En, Language::Es]
     }
 
+    #[allow(dead_code)]
     pub fn name(&self) -> &'static str {
         match self {
             Language::PtBr => "Português",

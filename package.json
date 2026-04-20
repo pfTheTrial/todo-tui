@@ -1,0 +1,23 @@
+{
+  "name": "todo-tui",
+  "version": "1.0.0",
+  "description": "A blazing-fast terminal task manager with SRS reviews, Pomodoro, and Notion sync",
+  "keywords": ["todo", "tui", "terminal", "productivity", "pomodoro", "srs", "cli"],
+  "homepage": "https://github.com/pfTheTrial/todo-tui",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pfTheTrial/todo-tui.git"
+  },
+  "license": "MIT",
+  "bin": {
+    "tdt": "./bin/tdt"
+  },
+  "scripts": {
+    "postinstall": "node npm/postinstall.js"
+  },
+  "os": ["linux", "darwin", "win32"],
+  "cpu": ["x64", "arm64"],
+  "engines": {
+    "node": ">=14"
+  }
+}

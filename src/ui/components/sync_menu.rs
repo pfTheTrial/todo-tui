@@ -10,11 +10,12 @@ use crate::app::{App};
 pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
     let theme = &app.theme;
     
+    let notion_configured = app.settings.notion_api_key.is_some();
     let items = vec![
         (app.t("menu.sync.github"), false),
         (app.t("menu.sync.gdrive"), false),
         (app.t("menu.sync.gcal"), false),
-        (app.t("menu.sync.notion"), false),
+        (app.t("menu.sync.notion"), notion_configured),
     ];
 
     let mut lines = Vec::new();

@@ -69,6 +69,7 @@ pub struct App {
     pub detail_scroll_offset: u16,
     pub status_message: Option<String>,
     pub update_info: Option<crate::utils::update::UpdateInfo>,
+    #[allow(dead_code)]
     pub last_sync: std::time::Instant,
     pub filter_text: String,
     pub sort_mode: SortMode,
@@ -168,6 +169,7 @@ impl App {
         Ok(())
     }
 
+    #[allow(dead_code)]
     pub fn trigger_notion_sync(&self, task_id: uuid::Uuid) {
         if self.settings.notion_api_key.is_none() || self.settings.notion_database_id.is_none() {
             return;
@@ -286,6 +288,7 @@ impl App {
             .collect()
     }
 
+    #[allow(dead_code)]
     pub fn filtered_task_count(&self) -> usize {
         if self.filter_text.is_empty() {
             self.tasks.len()

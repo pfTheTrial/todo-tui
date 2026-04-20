@@ -16,6 +16,7 @@ pub fn notify_pomodoro_finish(phase_name: &str) {
     );
 }
 
+#[allow(dead_code)]
 pub fn notify_tasks_due(count: usize) {
     if count > 0 {
         send_notification(

@@ -1,6 +1,7 @@
 use crate::model::{Task, settings::AppSettings};
 use serde_json::json;
 
+#[allow(dead_code)]
 pub fn sync_task_to_notion(settings: &AppSettings, task: &Task) -> Result<String, String> {
     let api_key = settings.notion_api_key.as_deref().ok_or("No API Key")?;
     let database_id = settings.notion_database_id.as_deref().ok_or("No Database ID")?;

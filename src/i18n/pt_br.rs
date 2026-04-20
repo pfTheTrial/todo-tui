@@ -38,6 +38,10 @@ pub fn get_strings() -> HashMap<&'static str, &'static str> {
     s.insert("status.paused", "PAUSADO");
     s.insert("status.due", "ATRASADA");
     s.insert("status.scheduled", "Agendado");
+    s.insert("status.done", "Concluído");
+    
+    // Sections
+    s.insert("section.status", "Status");
     
     // Menus
     s.insert("menu.settings.title", " Configurações ");
