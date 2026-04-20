@@ -1,0 +1,29 @@
+[package]
+name = "todo-tui"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "tdt"
+path = "src/main.rs"
+
+[dependencies]
+ratatui = "0.29"
+crossterm = "0.28"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }
+dirs = "5"
+uuid = { version = "1", features = ["v4", "serde"] }
+color-eyre = "0.6"
+notify-rust = "4"
+rust_xlsxwriter = "0.79"
+calamine = "0.26"
+ureq = { version = "3", features = ["json"] }
+http = "1"
+sys-locale = "0.3"
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = true

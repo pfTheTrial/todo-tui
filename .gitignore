@@ -1,0 +1,68 @@
+# ========================
+# Rust / Cargo
+# ========================
+/target/
+**/*.rs.bk
+*.pdb
+
+# ========================
+# IDE / Editor
+# ========================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.vs/
+
+# ========================
+# OS
+# ========================
+.DS_Store
+Thumbs.db
+desktop.ini
+ehthumbs.db
+
+# ========================
+# Dados do Usuário (Runtime)
+# NÃO versionar dados pessoais!
+# ========================
+tasks.json
+tasks.json.tmp
+pomodoro.json
+pomodoro.json.tmp
+*.json.bak
+*.json.tmp
+
+# ========================
+# Binários compilados
+# ========================
+*.exe
+*.dll
+*.so
+*.dylib
+
+# ========================
+# Debug / Logs
+# ========================
+*.log
+crash-*.log
+
+# ========================
+# NPM (wrapper package)
+# ========================
+npm/node_modules/
+npm/package-lock.json
+
+# ========================
+# Export artifacts
+# ========================
+tarefas_*.xlsx
+
+# ========================
+# Secrets / API Keys
+# Nunca versionar credenciais!
+# ========================
+.env
+.env.*
+secrets.toml
