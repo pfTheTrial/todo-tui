@@ -68,6 +68,10 @@ impl Default for Pomodoro {
 }
 
 impl Pomodoro {
+    pub fn active_profile(&self) -> PomodoroProfile {
+        self.profiles.get(self.active_profile_index).cloned().unwrap_or_default()
+    }
+
     pub fn tick(&mut self) -> bool {
         if !self.is_running || self.remaining_seconds == 0 {
             return false;
@@ -83,7 +87,7 @@ impl Pomodoro {
     }
 
     pub fn reset(&mut self) {
-        let profile = self.profiles.get(self.active_profile_index).cloned().unwrap_or_default();
+        let profile = self.active_profile();
         self.remaining_seconds = match self.phase {
             PomodoroPhase::Work => profile.work_duration * 60,
             PomodoroPhase::ShortBreak => profile.short_break * 60,
@@ -121,7 +125,7 @@ impl Pomodoro {
     }
 
     pub fn progress(&self) -> f64 {
-        let profile = self.profiles.get(self.active_profile_index).cloned().unwrap_or_default();
+        let profile = self.active_profile();
         let total = match self.phase {
             PomodoroPhase::Work => profile.work_duration * 60,
             PomodoroPhase::ShortBreak => profile.short_break * 60,

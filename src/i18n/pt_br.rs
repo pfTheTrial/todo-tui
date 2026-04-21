@@ -18,6 +18,7 @@ pub fn get_strings() -> HashMap<&'static str, &'static str> {
     s.insert("hint.settings", "[c]Config");
     s.insert("hint.sync", "[s]Sync");
     s.insert("hint.search", "Buscar");
+    s.insert("hint.quit", "Sair");
     
     // Sections
     s.insert("section.tasks", "Tarefas");
@@ -26,6 +27,7 @@ pub fn get_strings() -> HashMap<&'static str, &'static str> {
     s.insert("section.description", "Descrição");
     s.insert("section.importance", "Importância");
     s.insert("section.review_plan", "Plano de Revisão");
+    s.insert("section.status", "Status");
     
     // Categories
     s.insert("cat.overdue", "ATRASADAS");
@@ -40,16 +42,40 @@ pub fn get_strings() -> HashMap<&'static str, &'static str> {
     s.insert("status.scheduled", "Agendado");
     s.insert("status.done", "Concluído");
     
-    // Sections
-    s.insert("section.status", "Status");
+    // Pomodoro labels
+    s.insert("pomo.profile", "Perfil");
+    s.insert("pomo.phase", "Fase");
+    s.insert("pomo.time", "Tempo");
+    s.insert("pomo.status", "Status");
+    s.insert("pomo.session", "Sessão");
+    s.insert("pomo.break", "Pausa");
+    s.insert("pomo.done_title", "Pomodoro!");
+    s.insert("pomo.done_body", "Fase concluída! Hora de trocar.");
+    
+    // Sort labels
+    s.insert("sort.prio", "Prio");
+    s.insert("sort.date", "Data");
+    s.insert("sort.name", "Nome");
+    
+    // Detail labels
+    s.insert("detail.due", "Prazo");
+    s.insert("detail.empty", "Selecione uma tarefa para ver detalhes");
     
     // Menus
-    s.insert("menu.settings.title", " Configurações ");
+    s.insert("menu.settings.title", " ⚙ Configurações ");
     s.insert("menu.settings.theme", "Tema");
     s.insert("menu.settings.notifications", "Notificações");
     s.insert("menu.settings.startup", "Iniciar c/ Windows");
     s.insert("menu.settings.language", "Idioma");
     
+    // Settings sections
+    s.insert("settings.section.appearance", "🎨 APARÊNCIA");
+    s.insert("settings.section.system", "🔔 SISTEMA");
+    s.insert("settings.section.integrations", "🔗 SYNC & INTEGRAÇÕES");
+    s.insert("settings.section.actions", "📋 AÇÕES");
+    s.insert("settings.section.update", "🔄 ATUALIZAÇÃO");
+    
+    // Sync
     s.insert("menu.sync.title", " Sync & Integrações ");
     s.insert("menu.sync.github", "GitHub");
     s.insert("menu.sync.gdrive", "Google Drive");
@@ -74,28 +100,47 @@ pub fn get_strings() -> HashMap<&'static str, &'static str> {
     s.insert("confirm.next", " Próximo");
     s.insert("confirm.prev", " Anterior");
     s.insert("confirm.skip", " Pular");
+
     // Importance levels
     s.insert("importance.urgent", "Urgente");
     s.insert("importance.high", "Alta");
     s.insert("importance.medium", "Média");
     s.insert("importance.low", "Baixa");
     
-    // Detail
-    s.insert("detail.empty", "Selecione uma tarefa para ver detalhes");
-    
     // Settings menu extras
     s.insert("menu.settings.export", "📤 Exportar Tarefas (.xlsx)");
     s.insert("menu.settings.import", "📥 Importar Tarefas (.xlsx)");
-    s.insert("menu.settings.update", "Checar por Atualizações");
+    s.insert("menu.settings.update", "🔄 Atualizar tdt");
     s.insert("menu.settings.sync", "Sincronização");
     s.insert("menu.settings.notion_key", "Notion API Key");
     s.insert("menu.settings.notion_db", "Notion Database ID");
-    s.insert("menu.settings.sync_interval", "Intervalo Auto-Sync (min)");
+    s.insert("menu.settings.sync_interval", "Auto-Sync (min)");
     s.insert("menu.settings.export_done", "Exportado p/:");
     s.insert("menu.settings.import_path", "Caminho do arquivo .xlsx");
-    s.insert("menu.settings.no_update", "Versão atualizada!");
+    s.insert("menu.settings.no_update", "✅ Versão atualizada!");
     s.insert("menu.settings.update_available", "Nova versão disponível:");
     
+    // Update / Auto-update
+    s.insert("update.available", "disponível!");
+    s.insert("update.press_key", "Vá em Config para atualizar");
+    s.insert("update.confirm", "Baixar e instalar v{}?");
+    s.insert("update.downloading", "Baixando atualização...");
+    s.insert("update.success", "✅ Atualizado! Reinicie o tdt.");
+    s.insert("update.error", "Erro na atualização");
+    s.insert("update.unsupported", "Auto-update não suportado nesta plataforma");
+    
+    // Messages
+    s.insert("msg.imported", "tarefas importadas");
+    s.insert("msg.update_error", "Erro ao verificar atualizações");
+    s.insert("msg.update_checking", "Verificando atualizações...");
+    
+    // Performance stats
+    s.insert("settings.perf.title", "📊 Performance");
+    
+    // Notifications
+    s.insert("notify.tasks_due_title", "Tarefas Pendentes");
+    s.insert("notify.tasks_due_body", "Você tem {} tarefas a fazer hoje.");
+
     // Days text
     s.insert("days.ago", "atrás");
     s.insert("days.in", "em");

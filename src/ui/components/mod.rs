@@ -6,3 +6,4 @@ pub mod modal;
 pub mod settings_menu;
 pub mod sync_menu;
 pub mod welcome_screen;
+pub mod update_banner;

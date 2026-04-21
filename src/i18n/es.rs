@@ -3,6 +3,7 @@ use std::collections::HashMap;
 pub fn get_strings() -> HashMap<&'static str, &'static str> {
     let mut s = HashMap::new();
     
+    // Footer / Hints
     s.insert("hint.help", "[?]Ayuda");
     s.insert("hint.switch", "[←→]Cambiar");
     s.insert("hint.nav", "[↑↓]Navegar");
@@ -17,32 +18,64 @@ pub fn get_strings() -> HashMap<&'static str, &'static str> {
     s.insert("hint.settings", "[c]Config");
     s.insert("hint.sync", "[s]Sync");
     s.insert("hint.search", "Buscar");
+    s.insert("hint.quit", "Salir");
     
+    // Sections
     s.insert("section.tasks", "Tareas");
     s.insert("section.pomodoro", "Pomodoro");
     s.insert("section.info", "Info");
     s.insert("section.description", "Descripción");
     s.insert("section.importance", "Importancia");
     s.insert("section.review_plan", "Plan de Revisión");
+    s.insert("section.status", "Estado");
     
+    // Categories
     s.insert("cat.overdue", "ATRASADAS");
     s.insert("cat.today", "HOY");
     s.insert("cat.upcoming", "PRÓXIMOS DÍAS");
     s.insert("cat.inbox", "INBOX");
     
+    // Status
     s.insert("status.running", "EJECUTANDO");
     s.insert("status.paused", "PAUSADO");
     s.insert("status.due", "ATRASADA");
     s.insert("status.scheduled", "Programado");
     s.insert("status.done", "Hecho");
-    s.insert("section.status", "Estado");
     
-    s.insert("menu.settings.title", " Configuración ");
+    // Pomodoro labels
+    s.insert("pomo.profile", "Perfil");
+    s.insert("pomo.phase", "Fase");
+    s.insert("pomo.time", "Tiempo");
+    s.insert("pomo.status", "Estado");
+    s.insert("pomo.session", "Sesión");
+    s.insert("pomo.break", "Pausa");
+    s.insert("pomo.done_title", "Pomodoro!");
+    s.insert("pomo.done_body", "¡Fase completa! Hora de cambiar.");
+    
+    // Sort labels
+    s.insert("sort.prio", "Prio");
+    s.insert("sort.date", "Fecha");
+    s.insert("sort.name", "Nombre");
+    
+    // Detail labels
+    s.insert("detail.due", "Plazo");
+    s.insert("detail.empty", "Seleccione una tarea para ver detalles");
+    
+    // Menus
+    s.insert("menu.settings.title", " ⚙ Configuración ");
     s.insert("menu.settings.theme", "Tema");
     s.insert("menu.settings.notifications", "Notificaciones");
     s.insert("menu.settings.startup", "Iniciar con Windows");
     s.insert("menu.settings.language", "Idioma");
     
+    // Settings sections
+    s.insert("settings.section.appearance", "🎨 APARIENCIA");
+    s.insert("settings.section.system", "🔔 SISTEMA");
+    s.insert("settings.section.integrations", "🔗 SYNC & INTEGRACIONES");
+    s.insert("settings.section.actions", "📋 ACCIONES");
+    s.insert("settings.section.update", "🔄 ACTUALIZACIÓN");
+    
+    // Sync
     s.insert("menu.sync.title", " Sincronización ");
     s.insert("menu.sync.github", "GitHub");
     s.insert("menu.sync.gdrive", "Google Drive");
@@ -51,12 +84,14 @@ pub fn get_strings() -> HashMap<&'static str, &'static str> {
     s.insert("menu.sync.not_configured", "No configurado");
     s.insert("menu.sync.configured", "Configurado");
     
+    // Wizard
     s.insert("wizard.title", "Título de la Tarea");
     s.insert("wizard.desc", "Descripción");
     s.insert("wizard.date", "Fecha / Cuándo (ej: 3d, mañana, lun)");
     s.insert("wizard.review", "Plan de Revisión (ej: d3 d5 d7)");
     
-    s.insert("confirm.delete", "¿Realmente deseja eliminar la tarea?");
+    // Confirmations
+    s.insert("confirm.delete", "¿Realmente desea eliminar la tarea?");
     s.insert("confirm.yes", "si");
     s.insert("confirm.no", "no");
     s.insert("confirm.press", "Presione");
@@ -66,25 +101,46 @@ pub fn get_strings() -> HashMap<&'static str, &'static str> {
     s.insert("confirm.prev", " Anterior");
     s.insert("confirm.skip", " Omitir");
     
+    // Importance levels
     s.insert("importance.urgent", "Urgente");
     s.insert("importance.high", "Alta");
     s.insert("importance.medium", "Media");
     s.insert("importance.low", "Baja");
     
-    s.insert("detail.empty", "Seleccione una tarea para ver detalles");
-    
+    // Settings menu extras
     s.insert("menu.settings.export", "📤 Exportar Tareas (.xlsx)");
     s.insert("menu.settings.import", "📥 Importar Tareas (.xlsx)");
-    s.insert("menu.settings.update", "🔄 Comprobar Actualizaciones");
-    s.insert("menu.settings.sync", "🔁 Menú Sincronización");
+    s.insert("menu.settings.update", "🔄 Actualizar tdt");
+    s.insert("menu.settings.sync", "Menú Sincronización");
     s.insert("menu.settings.notion_key", "Clave API Notion");
     s.insert("menu.settings.notion_db", "ID Base de Datos Notion");
-    s.insert("menu.settings.sync_interval", "Intervalo Auto-Sync (min)");
+    s.insert("menu.settings.sync_interval", "Auto-Sync (min)");
     s.insert("menu.settings.export_done", "Exportado a:");
     s.insert("menu.settings.import_path", "Ruta del archivo .xlsx");
-    s.insert("menu.settings.no_update", "¡Versión actualizada!");
+    s.insert("menu.settings.no_update", "✅ ¡Versión actualizada!");
     s.insert("menu.settings.update_available", "Nueva versión disponible:");
     
+    // Update / Auto-update
+    s.insert("update.available", "disponible!");
+    s.insert("update.press_key", "Vaya a Config para actualizar");
+    s.insert("update.confirm", "¿Descargar e instalar v{}?");
+    s.insert("update.downloading", "Descargando actualización...");
+    s.insert("update.success", "✅ ¡Actualizado! Reinicie tdt.");
+    s.insert("update.error", "Error de actualización");
+    s.insert("update.unsupported", "Auto-update no soportado en esta plataforma");
+    
+    // Messages
+    s.insert("msg.imported", "tareas importadas");
+    s.insert("msg.update_error", "Error al verificar actualizaciones");
+    s.insert("msg.update_checking", "Verificando actualizaciones...");
+    
+    // Performance stats
+    s.insert("settings.perf.title", "📊 Rendimiento");
+    
+    // Notifications
+    s.insert("notify.tasks_due_title", "Tareas Pendientes");
+    s.insert("notify.tasks_due_body", "Tienes {} tareas pendientes hoy.");
+
     // Days text
     s.insert("days.ago", "hace");
     s.insert("days.in", "en");

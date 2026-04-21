@@ -86,9 +86,9 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
 
     let task_count = filtered.len();
     let sort_label = match app.sort_mode {
-        crate::app::SortMode::Priority => "Prio",
-        crate::app::SortMode::Date => "Date",
-        crate::app::SortMode::Title => "Name",
+        crate::app::SortMode::Priority => app.t("sort.prio"),
+        crate::app::SortMode::Date => app.t("sort.date"),
+        crate::app::SortMode::Title => app.t("sort.name"),
     };
     let list_block = Block::default()
         .borders(Borders::ALL)

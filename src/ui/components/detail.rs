@@ -47,7 +47,7 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
         };
 
         lines.push(Line::from(vec![Span::raw(format!(" {}  : ", app.t("wizard.title"))), Span::styled(&task.title, Style::default().fg(theme.accent).add_modifier(Modifier::BOLD))]));
-        lines.push(Line::from(vec![Span::raw(" Due    : "), Span::styled(next_rev, Style::default().fg(theme.accent_secondary))]));
+        lines.push(Line::from(vec![Span::raw(format!(" {}   : ", app.t("detail.due"))), Span::styled(next_rev, Style::default().fg(theme.accent_secondary))]));
         lines.push(Line::from(vec![Span::raw(format!(" {}   : ", app.t("section.status"))), Span::styled(if task.review_state.is_due() { app.t("status.due") } else { app.t("status.scheduled") }, Style::default().fg(if task.review_state.is_due() { theme.error } else { theme.success }))]));
         lines.push(Line::from(vec![
             Span::raw(format!(" {}   : ", app.t("section.importance"))),

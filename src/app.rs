@@ -30,8 +30,8 @@ pub enum InputMode {
     EditingNotionDatabase,
     EditingSyncInterval,
     Filtering,
-    ImportingExcel,
     Onboarding,
+    ConfirmingUpdate,
 }
 
 #[derive(Debug, PartialEq, Copy, Clone)]
@@ -75,6 +75,9 @@ pub struct App {
     pub sort_mode: SortMode,
     pub frame_count: u64,
     pub onboarding_index: usize,
+    // Resource usage (sampled periodically, not every frame)
+    pub sys_ram_mb: f32,
+    pub sys_cpu_pct: f32,
 }
 
 impl App {
@@ -135,6 +138,8 @@ impl App {
             sort_mode: SortMode::Priority,
             frame_count: 0,
             onboarding_index: 0,
+            sys_ram_mb: 0.0,
+            sys_cpu_pct: 0.0,
         };
 
         if app.settings.is_first_run {
@@ -205,6 +210,7 @@ impl App {
         let _ = self.save();
     }
 
+    #[allow(dead_code)]
     pub fn import_tasks(&mut self, path: String) {
         match crate::utils::export::import_tasks_from_xlsx(&path) {
             Ok(new_tasks) => {
@@ -212,7 +218,7 @@ impl App {
                 self.tasks.extend(new_tasks);
                 self.sort_tasks();
                 let _ = self.save();
-                self.status_message = Some(format!("Imported {} tasks", count));
+                self.status_message = Some(format!("{} {} {}", "✅", count, self.i18n.t("msg.imported")));
             }
             Err(e) => {
                 self.status_message = Some(format!("Import error: {}", e));

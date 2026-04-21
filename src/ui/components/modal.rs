@@ -33,6 +33,27 @@ pub fn draw(f: &mut Frame, app: &mut App) {
                 super::sync_menu::draw(f, app, area);
                 return;
             }
+            InputMode::ConfirmingUpdate => {
+                let version = app.update_info.as_ref().map_or("?".to_string(), |i| i.latest.clone());
+                let confirm_text = app.t("update.confirm").replace("{}", &version);
+                let area = crate::ui::centered_rect(50, 20, f.area());
+                f.render_widget(Clear, area);
+                let text = vec![
+                    Line::from(Span::styled(&confirm_text, Style::default().fg(theme.accent).add_modifier(Modifier::BOLD))),
+                    Line::from(""),
+                    Line::from(vec![
+                        Span::styled("[y] ", Style::default().fg(theme.success).add_modifier(Modifier::BOLD)),
+                        Span::raw(app.t("confirm.yes")),
+                        Span::raw("  "),
+                        Span::styled("[n/Esc] ", Style::default().fg(theme.muted).add_modifier(Modifier::BOLD)),
+                        Span::raw(app.t("confirm.no")),
+                    ]),
+                ];
+                f.render_widget(Paragraph::new(text)
+                    .block(Block::default().borders(Borders::ALL).title(app.t("settings.section.update")).border_style(Style::default().fg(theme.accent)))
+                    .style(Style::default().bg(theme.bg)), area);
+                return;
+            }
             InputMode::ConfirmingDelete => {
                 vec![Line::from(vec![
                     Span::raw(format!("{} ", app.t("confirm.delete"))),

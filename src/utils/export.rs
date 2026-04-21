@@ -3,6 +3,7 @@ use rust_xlsxwriter::*;
 use chrono::Local;
 use std::path::PathBuf;
 
+#[allow(dead_code)]
 pub fn export_tasks(tasks: &[Task]) -> Result<String, Box<dyn std::error::Error>> {
     let mut workbook = Workbook::new();
     let worksheet = workbook.add_worksheet();
@@ -89,6 +90,7 @@ pub fn export_tasks(tasks: &[Task]) -> Result<String, Box<dyn std::error::Error>
 
 use calamine::{Reader, Xlsx, RangeDeserializerBuilder};
 
+#[allow(dead_code)]
 pub fn import_tasks_from_xlsx(path: &str) -> Result<Vec<Task>, Box<dyn std::error::Error>> {
     let mut excel: Xlsx<_> = calamine::open_workbook(path)?;
     let sheet_name = excel.sheet_names().get(0).ok_or("Nenhuma planilha encontrada")?.clone();

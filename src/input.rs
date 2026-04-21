@@ -32,19 +32,23 @@ pub fn handle_key(app: &mut App, key: KeyEvent) -> bool {
         InputMode::MenuSettings => handle_menu_settings(app, key),
         InputMode::MenuSync => handle_menu_sync(app, key),
         InputMode::Filtering => handle_filtering(app, key),
-        InputMode::ImportingExcel => handle_text_input(app, key, |a, text| a.import_tasks(text)),
         InputMode::Onboarding => handle_onboarding(app, key),
         InputMode::EditingNotionKey => handle_text_input(app, key, |a, text| {
-            a.settings.notion_api_key = Some(text);
+            a.settings.notion_api_key = if text.is_empty() { None } else { Some(text) };
             let _ = a.save_settings();
-            a.input_mode = InputMode::MenuSettings;
+            // Chain to DB ID next
+            a.input_buffer = a.settings.notion_database_id.clone().unwrap_or_default();
+            a.input_mode = InputMode::EditingNotionDatabase;
         }),
         InputMode::EditingNotionDatabase => handle_text_input(app, key, |a, text| {
-            a.settings.notion_database_id = Some(text);
+            a.settings.notion_database_id = if text.is_empty() { None } else { Some(text) };
             let _ = a.save_settings();
-            a.input_mode = InputMode::MenuSettings;
+            // Chain to sync interval next
+            a.input_buffer = a.settings.sync_interval_mins.to_string();
+            a.input_mode = InputMode::EditingSyncInterval;
         }),
         InputMode::EditingSyncInterval => handle_sync_interval_input(app, key),
+        InputMode::ConfirmingUpdate => handle_confirm_update(app, key),
     }
 }
 
@@ -240,6 +244,11 @@ fn handle_creating_review(app: &mut App, key: KeyEvent) -> bool {
     false
 }
 
+// Settings menu indices (must match settings_menu.rs draw order):
+// 0: Theme  1: Language  2: Notifications  3: Startup
+// 4: Sync & Integrations (→ sync submenu)
+// 5: Update tdt
+// 6: 📊 Performance (read-only display)
 fn handle_menu_settings(app: &mut App, key: KeyEvent) -> bool {
     match key.code {
         KeyCode::Esc => {
@@ -255,60 +264,42 @@ fn handle_menu_settings(app: &mut App, key: KeyEvent) -> bool {
         }
         KeyCode::Left | KeyCode::Right | KeyCode::Char('h') | KeyCode::Char('l') | KeyCode::Enter | KeyCode::Char(' ') => {
             match app.menu_cursor {
+                // 🎨 APPEARANCE
                 0 => app.next_theme(),
                 1 => {
-                    app.settings.notifications_enabled = !app.settings.notifications_enabled;
-                    let _ = app.save_settings();
-                }
-                2 => {
-                    app.settings.startup_with_windows = !app.settings.startup_with_windows;
-                    let _ = app.save_settings();
-                }
-                3 => {
                     let langs = crate::i18n::Language::all();
                     let current_idx = langs.iter().position(|l| *l == app.settings.language).unwrap_or(0);
                     let next_idx = (current_idx + 1) % langs.len();
                     app.set_language(langs[next_idx]);
                 }
+                // 🔔 SYSTEM
+                2 => {
+                    app.settings.notifications_enabled = !app.settings.notifications_enabled;
+                    let _ = app.save_settings();
+                }
+                3 => {
+                    app.settings.startup_with_windows = !app.settings.startup_with_windows;
+                    let _ = app.save_settings();
+                }
+                // 🔗 SYNC & INTEGRATIONS — open sync submenu
                 4 => {
-                    app.input_buffer = app.settings.sync_interval_mins.to_string();
-                    app.input_mode = InputMode::EditingSyncInterval;
-                }
-                5 => {
-                    app.input_buffer = app.settings.notion_api_key.clone().unwrap_or_default();
-                    app.input_mode = InputMode::EditingNotionKey;
-                }
-                6 => {
-                    app.input_buffer = app.settings.notion_database_id.clone().unwrap_or_default();
-                    app.input_mode = InputMode::EditingNotionDatabase;
-                }
-                7 => {
-                    match crate::utils::export::export_tasks(&app.tasks) {
-                        Ok(path) => app.status_message = Some(format!("{} {}", app.t("menu.settings.export_done"), path)),
-                        Err(e) => app.status_message = Some(format!("Error: {}", e)),
-                    }
-                }
-                8 => {
-                    app.input_buffer.clear();
-                    app.input_mode = InputMode::ImportingExcel;
-                }
-                9 => {
-                    match crate::utils::update::check_for_update() {
-                        Some(info) if info.has_update => {
-                            app.status_message = Some(format!("{} {} → {}", app.t("menu.settings.update_available"), info.current, info.latest));
-                        }
-                        Some(_) => {
-                            app.status_message = Some(app.t("menu.settings.no_update").to_string());
-                        }
-                        None => {
-                            app.status_message = Some("Error checking for updates".to_string());
-                        }
-                    }
-                }
-                10 => {
                     app.input_mode = InputMode::MenuSync;
                     app.menu_cursor = 0;
                 }
+                // 🔄 UPDATE
+                5 => {
+                    if let Some(ref info) = app.update_info {
+                        if info.has_update {
+                            app.input_mode = InputMode::ConfirmingUpdate;
+                        } else {
+                            app.status_message = Some(app.t("menu.settings.no_update").to_string());
+                        }
+                    } else {
+                        app.status_message = Some(app.t("msg.update_checking").to_string());
+                    }
+                }
+                // 📊 PERFORMANCE — read only
+                6 => {}
                 _ => {}
             }
         }
@@ -319,13 +310,61 @@ fn handle_menu_settings(app: &mut App, key: KeyEvent) -> bool {
 
 fn handle_menu_sync(app: &mut App, key: KeyEvent) -> bool {
     match key.code {
-        KeyCode::Esc => app.input_mode = InputMode::Normal,
+        KeyCode::Esc => {
+            app.input_mode = InputMode::Normal;
+            app.menu_cursor = 4; // return settings cursor to Sync item
+            app.input_mode = InputMode::MenuSettings;
+        }
         KeyCode::Up | KeyCode::Char('k') => {
             if app.menu_cursor > 0 { app.menu_cursor -= 1; }
             else { app.menu_cursor = 3; }
         }
         KeyCode::Down | KeyCode::Char('j') => {
             app.menu_cursor = (app.menu_cursor + 1) % 4;
+        }
+        // When Notion row (3) is selected, Enter/Space opens sub-editing.
+        // We cycle through: API Key → DB ID → Interval
+        KeyCode::Enter | KeyCode::Char(' ') | KeyCode::Right | KeyCode::Char('l') => {
+            if app.menu_cursor == 3 {
+                // Open Notion API Key editing
+                app.input_buffer = app.settings.notion_api_key.clone().unwrap_or_default();
+                app.input_mode = InputMode::EditingNotionKey;
+            }
+        }
+        _ => {}
+    }
+    false
+}
+
+fn handle_confirm_update(app: &mut App, key: KeyEvent) -> bool {
+    match key.code {
+        KeyCode::Char('y') | KeyCode::Char('Y') => {
+            let version = if let Some(ref info) = app.update_info {
+                info.latest.clone()
+            } else {
+                app.status_message = Some(app.t("msg.update_error").to_string());
+                app.input_mode = InputMode::MenuSettings;
+                return false;
+            };
+            
+            app.status_message = Some(app.t("update.downloading").to_string());
+            
+            match crate::utils::auto_update::perform_update(&version) {
+                Ok(_v) => {
+                    app.status_message = Some(format!("{}", app.t("update.success")));
+                }
+                Err(e) => {
+                    if e == "unsupported_platform" {
+                        app.status_message = Some(app.t("update.unsupported").to_string());
+                    } else {
+                        app.status_message = Some(format!("{}: {}", app.t("update.error"), e));
+                    }
+                }
+            }
+            app.input_mode = InputMode::MenuSettings;
+        }
+        KeyCode::Char('n') | KeyCode::Char('N') | KeyCode::Esc => {
+            app.input_mode = InputMode::MenuSettings;
         }
         _ => {}
     }
@@ -340,13 +379,15 @@ fn handle_sync_interval_input(app: &mut App, key: KeyEvent) -> bool {
                 let _ = app.save_settings();
             }
             app.input_buffer.clear();
-            app.input_mode = InputMode::MenuSettings;
+            app.input_mode = InputMode::MenuSync;
+            app.menu_cursor = 3; // back on Notion row
         }
-        KeyCode::Char(c) if c.is_digit(10) => app.input_buffer.push(c),
+        KeyCode::Char(c) if c.is_ascii_digit() => app.input_buffer.push(c),
         KeyCode::Backspace => { app.input_buffer.pop(); }
         KeyCode::Esc => {
             app.input_buffer.clear();
-            app.input_mode = InputMode::MenuSettings;
+            app.input_mode = InputMode::MenuSync;
+            app.menu_cursor = 3;
         }
         _ => {}
     }

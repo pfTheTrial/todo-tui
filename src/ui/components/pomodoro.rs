@@ -18,7 +18,7 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
         .style(Style::default().bg(theme.bg).fg(theme.fg));
 
     let p = &app.pomodoro;
-    let profile = p.profiles.get(p.active_profile_index).cloned().unwrap_or_default();
+    let profile = p.active_profile();
     let lock_icon = if p.is_running { " 🔒" } else { "" };
     
     let layout = Layout::default()
@@ -35,14 +35,13 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
     let status_text = if p.is_running { app.t("status.running") } else { app.t("status.paused") };
     
     let pomodoro_text = format!(
-        "Profile: {}{}\nPhase  : {:?}\nTime   : {:02}:{:02}\nStatus : {}\nSession: {} | Break: {}m / {}m",
-        profile.name, lock_icon,
-        p.phase,
-        p.remaining_seconds / 60,
-        p.remaining_seconds % 60,
-        status_text,
-        p.total_sessions_completed,
-        profile.short_break, profile.long_break
+        "{}: {}{}\n{}: {:?}\n{}: {:02}:{:02}\n{}: {}\n{}: {} | {}: {}m / {}m",
+        app.t("pomo.profile"), profile.name, lock_icon,
+        app.t("pomo.phase"), p.phase,
+        app.t("pomo.time"), p.remaining_seconds / 60, p.remaining_seconds % 60,
+        app.t("pomo.status"), status_text,
+        app.t("pomo.session"), p.total_sessions_completed,
+        app.t("pomo.break"), profile.short_break, profile.long_break
     );
     f.render_widget(Paragraph::new(pomodoro_text).style(Style::default().fg(theme.fg)), layout[0]);
 

@@ -1,4 +1,5 @@
 pub struct UpdateInfo {
+    #[allow(dead_code)]
     pub current: String,
     pub latest: String,
     #[allow(dead_code)]

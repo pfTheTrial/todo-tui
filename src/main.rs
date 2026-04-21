@@ -97,8 +97,9 @@ fn run_app<B: Backend>(
         if last_tick.elapsed() >= tick_rate {
             if app.pomodoro_tick() {
                 if app.settings.notifications_enabled {
-                    let phase_name = format!("{:?}", app.pomodoro.phase);
-                    crate::utils::notifications::notify_pomodoro_finish(&phase_name);
+                    let title = app.t("pomo.done_title").to_string();
+                    let body = app.t("pomo.done_body").to_string();
+                    crate::utils::notifications::notify_pomodoro_finish(&title, &body);
                 }
             }
             
@@ -118,8 +119,12 @@ fn run_app<B: Backend>(
                 }
             }
 
-            // TODO: Phase 7 — periodic sync logic
-            // if app.settings.sync_interval_mins > 0 && app.last_sync.elapsed() >= ... { }
+            // Sample own resource usage every 2 ticks (~2s)
+            if app.frame_count % 2 == 0 {
+                let (ram, cpu) = crate::utils::perf::sample_self();
+                app.sys_ram_mb = ram;
+                app.sys_cpu_pct = cpu;
+            }
 
             last_tick = Instant::now();
         }

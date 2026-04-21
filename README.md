@@ -9,11 +9,13 @@
      ╚═╝   ╚═════╝    ╚═╝   
 ```
 
-**Todo-TUI (tdt)** — Gerenciador de tarefas para terminal ultrarrápido
+**Terminal Task Dashboard (tdt)** — Gerenciador de tarefas para terminal ultrarrápido
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/pfTheTrial/todo-tui/releases)
+[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/pfTheTrial/todo-tui/releases)
+
+<img src="docs/demo.gif" width="800" alt="tdt demo animado mostrando tarefas, pomodoro e configurações reativas"/>
 
 🇧🇷 Português | [🇺🇸 English](#english)
 
@@ -29,21 +31,29 @@
 
 - **Revisões espaçadas (SRS)** para nunca esquecer uma tarefa importante
 - **Timer Pomodoro** integrado com múltiplos perfis
-- **Sincronização com Notion** para equipes
+- **Sincronização com Notion** para equipes (auto-provisioning de colunas)
+- **Sincronização com Syncthing** para multi-dispositivo (hot-reload silencioso)
 - **I18n** com auto-detecção do idioma do sistema (PT-BR, EN, ES)
 - **7 temas visuais** premium
-- **Export/Import** em Excel (`.xlsx`)
+- **Setup Wizard** interativo na primeira execução
 
 ---
 
 ### 📦 Instalação
 
 ```bash
-# Via NPM (instala globalmente e baixa o binário automaticamente)
-npm install -g todo-tui
+# Via NPM / PNPM (instala globalmente e baixa o binário automaticamente)
+npm install -g tdt-cli
+pnpm add -g tdt-cli
 
-# E depois, em qualquer terminal:
-tdt
+# Via NPX (testar sem instalar)
+npx tdt-cli
+
+# Via Shell Installer (Windows - Powershell)
+iwr -useb https://raw.githubusercontent.com/pfTheTrial/todo-tui/main/install.ps1 | iex
+
+# Via Shell Installer (Linux / macOS)
+curl -fsSL https://raw.githubusercontent.com/pfTheTrial/todo-tui/main/install.sh | sh
 
 # Via Cargo (se você tem Rust instalado)
 cargo install --git https://github.com/pfTheTrial/todo-tui
@@ -52,15 +62,41 @@ cargo install --git https://github.com/pfTheTrial/todo-tui
 # https://github.com/pfTheTrial/todo-tui/releases
 ```
 
+**Plataformas suportadas:** Windows (x64), macOS (Intel/Apple Silicon), Linux (x64/ARM), Android (Termux)
+
 ---
 
 ### 🚀 Início Rápido
 
 ```
 tdt          # Abre o app
+tdt --setup  # Abre o Setup Wizard (ou re-configura)
+tdt --help   # Mostra todos os comandos
 ```
 
-Na primeira execução, você verá um **tour guiado** de 6 slides explicando o layout e os recursos.
+Na primeira execução, você verá um **Setup Wizard** interativo para configurar idioma, tema e integrações.
+
+---
+
+### 🖥️ Comandos CLI
+
+```
+USAGE:
+    tdt [OPTIONS] [COMMAND]
+
+COMMANDS:
+    update          Verifica e instala a última versão
+    sync            Força um sync manual e sai
+    reset           Reseta configurações (preserva tarefas)
+
+OPTIONS:
+    -h, --help              Mostra a ajuda completa
+    -V, --version           Mostra a versão atual
+        --setup             Abre o Setup Wizard
+        --lang <LANG>       Força idioma temporário (pt-br, en, es)
+        --data-dir <PATH>   Diretório de dados customizado
+        --no-sync           Desativa sync automático nesta sessão
+```
 
 ---
 
@@ -185,16 +221,17 @@ Selecione um perfil, pressione "e":
 | **I18n Auto-detect** | ✅ | Detecta idioma do sistema (PT-BR, EN, ES) |
 | **Revisões SRS** | ✅ | Planos de revisão espaçada personalizáveis |
 | **Pomodoro** | ✅ | Timer com múltiplos perfis configuráveis |
-| **Notion Sync** | ✅ | Sincroniza tarefas com banco Notion |
-| **Export .xlsx** | ✅ | Exporta tarefas para Excel |
-| **Import .xlsx** | ✅ | Importa tarefas de Excel |
 | **7 Temas** | ✅ | Dracula, Catppuccin, Nord, Gruvbox, Tokyo Night, Solarized, Minimal |
 | **Notificações OS** | ✅ | Alertas nativos do sistema operacional |
-| **Update Check** | ✅ | Verifica nova versão em background (sem travar o startup) |
-| **Google Calendar** | 🔨 | Em desenvolvimento |
-| **Google Drive Sync** | 🔨 | Em desenvolvimento |
-| **OneDrive / Proton** | 🔨 | Em desenvolvimento |
-| **Modo Vim full** | 🔨 | Em desenvolvimento |
+| **Update Check & Auto-update** | ✅ | Verifica atualizações e instala a nova versão *in-place* no binário |
+| **Setup Wizard** | ✅ | Tour guiado na primeira execução com animações |
+| **Live Resource Monitor** | ✅ | Visualização de telemetria base de RAM e CPU no painel settings |
+| **CLI Completa** | ✅ | Flags, subcomandos e help integrado |
+| **Notion Sync** | 🔨 | Sincroniza tarefas com banco Notion (auto-provisioning) |
+| **Syncthing** | 🔨 | Status de sincronização + hot-reload silencioso |
+| **Schema Versioning** | 🔨 | Migração automática de dados entre versões |
+| **Shell Installer** | 🔨 | Instalador one-liner para Windows/Linux/macOS |
+| **NPM Distribution** | 🔨 | Pacote `tdt-cli` para npm/pnpm/npx |
 
 ---
 
@@ -242,13 +279,19 @@ cargo build --release
 - [x] Core TUI com layout Lazygit
 - [x] Sistema de Revisão SRS
 - [x] Pomodoro com perfis
-- [x] Sincronização Notion
 - [x] I18n PT-BR / EN / ES
-- [x] Export/Import Excel
-- [x] Distribuição NPM
-- [ ] Google Calendar sync
-- [ ] Google Drive / OneDrive / Proton backup
-- [ ] Modo Vim completo (hjkl para tudo)
+- [x] 7 Temas visuais premium
+- [x] Notificações nativas
+- [x] In-place Auto-update inteligente do binário
+- [x] Otimização e Live Telemetry (RAM/CPU Dashboard)
+- [x] Setup Wizard com animações
+- [ ] Integração Notion (auto-provisioning de colunas)
+- [ ] Integração Syncthing (status + hot-reload)
+- [ ] CLI completa com `clap` (flags, subcomandos)
+- [ ] Schema versioning + backup automático
+- [ ] Distribuição NPM (`tdt-cli`)
+- [ ] Shell Installer (Powershell/Bash)
+- [ ] Suporte Android (Termux)
 
 ---
 
@@ -271,21 +314,31 @@ cargo build --release
 
 - **Spaced Repetition System (SRS)** so important tasks never fall through the cracks
 - **Built-in Pomodoro timer** with multiple profiles
-- **Notion sync** for team workflows
+- **Notion sync** for team workflows (auto-provisioning of database columns)
+- **Syncthing integration** for multi-device sync (silent hot-reload)
 - **I18n** with automatic system locale detection (PT-BR, EN, ES)
 - **7 premium visual themes**
-- **Excel export/import** (`.xlsx`)
+- **In-place Auto-update** replacing the executable seamlessly
+- **Live Telemetry** checking its ultra-lightweight RAM/CPU usage directly in the TUI Settings
+- **Interactive Setup Wizard** on first run
 
 ---
 
 ### 📦 Installation
 
 ```bash
-# Via NPM (installs globally and downloads the correct binary automatically)
-npm install -g todo-tui
+# Via NPM / PNPM (installs globally and downloads the correct binary automatically)
+npm install -g tdt-cli
+pnpm add -g tdt-cli
 
-# Then, from any terminal:
-tdt
+# Via NPX (try without installing)
+npx tdt-cli
+
+# Via Shell Installer (Windows - Powershell)
+iwr -useb https://raw.githubusercontent.com/pfTheTrial/todo-tui/main/install.ps1 | iex
+
+# Via Shell Installer (Linux / macOS)
+curl -fsSL https://raw.githubusercontent.com/pfTheTrial/todo-tui/main/install.sh | sh
 
 # Via Cargo (if you have Rust installed)
 cargo install --git https://github.com/pfTheTrial/todo-tui
@@ -294,15 +347,41 @@ cargo install --git https://github.com/pfTheTrial/todo-tui
 # https://github.com/pfTheTrial/todo-tui/releases
 ```
 
+**Supported Platforms:** Windows (x64), macOS (Intel/Apple Silicon), Linux (x64/ARM), Android (Termux)
+
 ---
 
 ### 🚀 Quick Start
 
 ```
 tdt          # Launch the app
+tdt --setup  # Open Setup Wizard (or re-configure)
+tdt --help   # Show all commands
 ```
 
-On first launch, a **6-slide onboarding tour** explains the layout and features.
+On first launch, an **interactive Setup Wizard** guides you through language, theme, and integrations.
+
+---
+
+### 🖥️ CLI Commands
+
+```
+USAGE:
+    tdt [OPTIONS] [COMMAND]
+
+COMMANDS:
+    update          Check and install latest version
+    sync            Force manual sync and exit
+    reset           Reset settings (preserves tasks)
+
+OPTIONS:
+    -h, --help              Print help information
+    -V, --version           Print version
+        --setup             Open the Setup Wizard
+        --lang <LANG>       Override language (pt-br, en, es)
+        --data-dir <PATH>   Custom data directory
+        --no-sync           Disable auto-sync for this session
+```
 
 ---
 
@@ -419,15 +498,17 @@ Select profile, press "e":
 | **Auto I18n** | ✅ | Detects system locale (PT-BR, EN, ES) |
 | **SRS Reviews** | ✅ | Customizable spaced repetition plans |
 | **Pomodoro** | ✅ | Timer with multiple configurable profiles |
-| **Notion Sync** | ✅ | Push tasks to Notion databases |
-| **Export .xlsx** | ✅ | Export tasks to Excel |
-| **Import .xlsx** | ✅ | Import tasks from Excel |
 | **7 Themes** | ✅ | Dracula, Catppuccin, Nord, Gruvbox, Tokyo Night, Solarized, Minimal |
 | **OS Notifications** | ✅ | Native system notifications |
-| **Update Check** | ✅ | Background version check (no startup delay) |
-| **Google Calendar** | 🔨 | In development |
-| **Cloud Backup** | 🔨 | Google Drive / OneDrive / Proton — in development |
-| **Full Vim mode** | 🔨 | In development |
+| **Auto-updater** | ✅ | Background version check + seamless in-place binary update |
+| **Setup Wizard** | ✅ | Guided onboarding with animations |
+| **Live Telemetry** | ✅ | Real-time RAM/CPU performance stats straight into the TUI settings |
+| **Full CLI** | ✅ | Flags, subcommands, and built-in help |
+| **Notion Sync** | 🔨 | Push tasks to Notion (auto-provisioning columns) |
+| **Syncthing** | 🔨 | Sync status + silent hot-reload |
+| **Schema Versioning** | 🔨 | Automatic data migration between versions |
+| **Shell Installer** | 🔨 | One-liner installer for Windows/Linux/macOS |
+| **NPM Distribution** | 🔨 | `tdt-cli` package for npm/pnpm/npx |
 
 ---
 
@@ -475,13 +556,19 @@ cargo build --release
 - [x] Core TUI with Lazygit-style layout
 - [x] SRS review system
 - [x] Pomodoro with profiles
-- [x] Notion sync
 - [x] I18n PT-BR / EN / ES
-- [x] Excel export/import
-- [x] NPM distribution
-- [ ] Google Calendar sync
-- [ ] Cloud backup (Google Drive / OneDrive / Proton)
-- [ ] Full Vim mode
+- [x] 7 premium visual themes
+- [x] Native OS notifications
+- [x] In-place auto-updater and background startup check
+- [x] Live TUI telemetry (RAM/CPU metrics)
+- [x] Setup Wizard with animations
+- [ ] Notion integration (auto-provisioning columns)
+- [ ] Syncthing integration (status + hot-reload)
+- [ ] Full CLI with `clap` (flags, subcommands)
+- [ ] Schema versioning + automatic backups
+- [ ] NPM distribution (`tdt-cli`)
+- [ ] Shell Installer (Powershell/Bash)
+- [ ] Android support (Termux)
 
 ---
 
