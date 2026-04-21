@@ -110,14 +110,15 @@ fn get_cpu_pct() -> f32 {
         }
 
         unsafe {
+            use std::sync::atomic::{AtomicU64, Ordering};
+            static LAST_CPU_100NS: AtomicU64 = AtomicU64::new(0);
+            static LAST_WALL_NS: AtomicU64 = AtomicU64::new(0);
+
             let proc = GetCurrentProcess();
             let mut creation = mem::zeroed::<FILETIME>();
             let mut exit = mem::zeroed::<FILETIME>();
             let mut kernel = mem::zeroed::<FILETIME>();
             let mut user = mem::zeroed::<FILETIME>();
-
-            static mut LAST_CPU_100NS: u64 = 0;
-            static mut LAST_WALL_NS: u64 = 0;
 
             GetProcessTimes(proc, &mut creation, &mut exit, &mut kernel, &mut user);
             let cpu_now = ((kernel.dwHighDateTime as u64) << 32 | kernel.dwLowDateTime as u64)
@@ -128,11 +129,11 @@ fn get_cpu_pct() -> f32 {
                 .map(|d| d.as_nanos() as u64)
                 .unwrap_or(0);
 
-            let cpu_delta = cpu_now.wrapping_sub(LAST_CPU_100NS);
-            let wall_delta = wall_now.wrapping_sub(LAST_WALL_NS);
+            let last_cpu = LAST_CPU_100NS.swap(cpu_now, Ordering::Relaxed);
+            let last_wall = LAST_WALL_NS.swap(wall_now, Ordering::Relaxed);
 
-            LAST_CPU_100NS = cpu_now;
-            LAST_WALL_NS = wall_now;
+            let cpu_delta = cpu_now.wrapping_sub(last_cpu);
+            let wall_delta = wall_now.wrapping_sub(last_wall);
 
             let mut sysinfo: SystemInfo = mem::zeroed();
             GetSystemInfo(&mut sysinfo);
@@ -150,9 +151,12 @@ fn get_cpu_pct() -> f32 {
     #[cfg(not(windows))]
     {
         // /proc/self/stat — fields 14 (utime) + 15 (stime) in clock ticks
+        use std::sync::atomic::{AtomicU64, Ordering};
         use std::time::Instant;
-        static mut LAST_TICKS: u64 = 0;
-        static mut LAST_INSTANT: Option<Instant> = None;
+        static LAST_TICKS: AtomicU64 = AtomicU64::new(0);
+        thread_local! {
+            static LAST_INSTANT: std::cell::Cell<Option<Instant>> = std::cell::Cell::new(None);
+        }
 
         let clk_tck = 100u64; // Hz (sysconf _SC_CLK_TCK typically 100)
         if let Ok(stat) = std::fs::read_to_string("/proc/self/stat") {
@@ -162,14 +166,15 @@ fn get_cpu_pct() -> f32 {
                 let stime: u64 = fields[14].parse().unwrap_or(0);
                 let ticks = utime + stime;
                 let now = Instant::now();
-                unsafe {
-                    let delta_ticks = ticks.wrapping_sub(LAST_TICKS);
-                    let delta_secs = LAST_INSTANT.map_or(1.0, |p| now.duration_since(p).as_secs_f32());
-                    LAST_TICKS = ticks;
-                    LAST_INSTANT = Some(now);
-                    let pct = (delta_ticks as f32 / clk_tck as f32 / delta_secs) * 100.0;
-                    return pct.min(100.0).max(0.0);
-                }
+                let last_ticks = LAST_TICKS.swap(ticks, Ordering::Relaxed);
+                let delta_ticks = ticks.wrapping_sub(last_ticks);
+                let delta_secs = LAST_INSTANT.with(|li| {
+                    let prev = li.get();
+                    li.set(Some(now));
+                    prev.map_or(1.0, |p| now.duration_since(p).as_secs_f32())
+                });
+                let pct = (delta_ticks as f32 / clk_tck as f32 / delta_secs) * 100.0;
+                return pct.min(100.0).max(0.0);
             }
         }
         0.0

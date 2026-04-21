@@ -17,10 +17,9 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
 
     // Items  (index must match input.rs handler)
     // 0: Theme        1: Language
-    // 2: Notifications  3: Startup
-    // 4: Sync & Integrations
-    // 5: Update tdt
-    // 6: Stats
+    // 2: Notif Pomo   3: Notif Tasks   4: Startup
+    // 5: Sync & Integrations
+    // 6: Update tdt   7: Stats
     let items: [(String, String); SETTINGS_ITEM_COUNT] = [
         // 🎨 APPEARANCE
         (app.t("menu.settings.theme").to_string(),         app.theme.name.clone()),
@@ -49,9 +48,8 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
                 String::new()
             }
         }),
-        // 📊 PERFORMANCE
         (app.t("settings.perf.title").to_string(), {
-            format!("RAM {} MB  CPU {}%", app.sys_ram_mb, app.sys_cpu_pct)
+            format!("RAM {:.1} MB  CPU {:.1}%", app.sys_ram_mb, app.sys_cpu_pct)
         }),
     ];
 

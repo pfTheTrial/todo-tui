@@ -245,10 +245,10 @@ fn handle_creating_review(app: &mut App, key: KeyEvent) -> bool {
 }
 
 // Settings menu indices (must match settings_menu.rs draw order):
-// 0: Theme  1: Language  2: Notifications  3: Startup
-// 4: Sync & Integrations (→ sync submenu)
-// 5: Update tdt
-// 6: 📊 Performance (read-only display)
+// 0: Theme        1: Language
+// 2: Notif Pomo   3: Notif Tasks   4: Startup
+// 5: Sync & Integrations (→ sync submenu)
+// 6: Update tdt   7: 📊 Performance (read-only display)
 fn handle_menu_settings(app: &mut App, key: KeyEvent) -> bool {
     match key.code {
         KeyCode::Esc => {
@@ -316,8 +316,7 @@ fn handle_menu_settings(app: &mut App, key: KeyEvent) -> bool {
 fn handle_menu_sync(app: &mut App, key: KeyEvent) -> bool {
     match key.code {
         KeyCode::Esc => {
-            app.input_mode = InputMode::Normal;
-            app.menu_cursor = 4; // return settings cursor to Sync item
+            app.menu_cursor = 5; // return settings cursor to Sync & Integrations item
             app.input_mode = InputMode::MenuSettings;
         }
         KeyCode::Up | KeyCode::Char('k') => {

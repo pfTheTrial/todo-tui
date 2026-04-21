@@ -7,11 +7,12 @@ pub fn send_notification(title: &str, body: &str) {
         .show();
 }
 
+#[inline]
 pub fn notify_pomodoro_finish(title: &str, body: &str) {
     send_notification(title, body);
 }
 
-#[allow(dead_code)]
+#[inline]
 pub fn notify_tasks_due(title: &str, body: &str) {
     send_notification(title, body);
 }

@@ -7,6 +7,19 @@ pub struct UpdateInfo {
     pub has_update: bool,
 }
 
+/// Returns true if `candidate` is strictly greater than `current` (semver numeric comparison).
+fn semver_gt(candidate: &str, current: &str) -> bool {
+    let parse = |s: &str| -> [u64; 3] {
+        let mut parts = s.split('.').map(|p| p.parse::<u64>().unwrap_or(0));
+        [
+            parts.next().unwrap_or(0),
+            parts.next().unwrap_or(0),
+            parts.next().unwrap_or(0),
+        ]
+    };
+    parse(candidate) > parse(current)
+}
+
 pub fn check_for_update() -> Option<UpdateInfo> {
     let current_version = env!("CARGO_PKG_VERSION").to_string();
     let repo = "pfTheTrial/todo-tui";
@@ -29,7 +42,9 @@ pub fn check_for_update() -> Option<UpdateInfo> {
         .map(|assets| assets.iter().any(|a| a["name"].as_str().unwrap_or("") == platform_asset))
         .unwrap_or(false);
 
-    let has_update = !latest_tag.is_empty() && latest_tag != current_version && has_valid_asset;
+    let has_update = !latest_tag.is_empty()
+        && semver_gt(&latest_tag, &current_version)
+        && has_valid_asset;
 
     Some(UpdateInfo {
         current: current_version,

@@ -1,7 +1,7 @@
-use std::fs;
-use std::path::PathBuf;
 use color_eyre::Result;
-use crate::model::Task;
+use std::fs;
+use std::path::{Path, PathBuf};
+use uuid::Uuid;
 
 pub struct JsonStore {
     path: PathBuf,
@@ -22,18 +22,38 @@ impl JsonStore {
         Ok(data)
     }
 
+    pub fn backup_corrupt(&self) -> Result<Option<PathBuf>> {
+        if !self.path.exists() {
+            return Ok(None);
+        }
+        let backup = self.path.with_extension(format!(
+            "corrupt-{}.json",
+            chrono::Utc::now().format("%Y%m%d%H%M%S")
+        ));
+        fs::rename(&self.path, &backup)?;
+        Ok(Some(backup))
+    }
+
     pub fn exists(&self) -> bool {
         self.path.exists()
     }
 
-    pub fn save(&self, tasks: &[Task]) -> Result<()> {
+    pub fn save<T: serde::Serialize>(&self, data: &T) -> Result<()> {
         if let Some(parent) = self.path.parent() {
             fs::create_dir_all(parent)?;
         }
-        let content = serde_json::to_string_pretty(tasks)?;
-        let tmp_path = self.path.with_extension("tmp");
+        let content = serde_json::to_string_pretty(data)?;
+        let tmp_path = tmp_path_for(&self.path);
         fs::write(&tmp_path, content)?;
         fs::rename(&tmp_path, &self.path)?;
         Ok(())
     }
+}
+
+fn tmp_path_for(path: &Path) -> PathBuf {
+    let file_name = path
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("store.json");
+    path.with_file_name(format!("{}.{}.tmp", file_name, Uuid::new_v4()))
 }

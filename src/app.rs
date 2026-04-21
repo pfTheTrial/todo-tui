@@ -1,12 +1,20 @@
-use crate::model::{Task, Pomodoro, settings::AppSettings};
 use crate::i18n::{I18n, Language};
-use serde::{Serialize, Deserialize};
+use crate::model::{settings::AppSettings, Pomodoro, Task};
 use crate::storage::JsonStore;
 use color_eyre::Result;
+use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
+
+const CURRENT_SCHEMA_VERSION: u32 = 1;
+
+fn current_schema_version() -> u32 {
+    CURRENT_SCHEMA_VERSION
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PersistentState {
+    #[serde(default = "current_schema_version")]
+    pub schema_version: u32,
     pub pomodoro: Pomodoro,
     pub settings: AppSettings,
 }
@@ -88,21 +96,34 @@ impl App {
         
         let store = JsonStore::new(tasks_path);
         let tasks: Vec<Task> = if store.exists() {
-            store.load()?
+            match store.load() {
+                Ok(tasks) => tasks,
+                Err(err) => {
+                    let backup = store.backup_corrupt()?;
+                    eprintln!(
+                        "tasks.json inválido foi preservado em {:?}; iniciando com lista vazia. Erro: {}",
+                        backup, err
+                    );
+                    Vec::new()
+                }
+            }
         } else {
             Vec::new()
         };
 
         let pomodoro_store = JsonStore::new(pomo_path);
         let (pomodoro, settings) = if pomodoro_store.exists() {
-            let state: PersistentState = pomodoro_store.load().unwrap_or_else(|_| {
-                // Try backward compatibility or default
-                PersistentState {
-                    pomodoro: Pomodoro::default(),
-                    settings: AppSettings::default(),
+            match pomodoro_store.load::<PersistentState>() {
+                Ok(state) => (state.pomodoro, state.settings),
+                Err(err) => {
+                    let backup = pomodoro_store.backup_corrupt()?;
+                    eprintln!(
+                        "pomodoro.json inválido foi preservado em {:?}; usando configurações padrão. Erro: {}",
+                        backup, err
+                    );
+                    (Pomodoro::default(), AppSettings::default())
                 }
-            });
-            (state.pomodoro, state.settings)
+            }
         } else {
             (Pomodoro::default(), AppSettings::default())
         };
@@ -165,31 +186,42 @@ impl App {
 
     pub fn save_settings(&self) -> Result<()> {
         let state = PersistentState {
+            schema_version: CURRENT_SCHEMA_VERSION,
             pomodoro: self.pomodoro.clone(),
             settings: self.settings.clone(),
         };
-        let content = serde_json::to_string_pretty(&state)?;
-        let path = self.pomodoro_store.path();
-        let tmp_path = path.with_extension("tmp");
-        std::fs::write(&tmp_path, content)?;
-        std::fs::rename(&tmp_path, path)?;
+        self.pomodoro_store.save(&state)?;
         Ok(())
     }
 
-    #[allow(dead_code)]
-    pub fn trigger_notion_sync(&self, task_id: uuid::Uuid) {
+    pub fn trigger_notion_sync(&mut self, task_id: uuid::Uuid) {
         if self.settings.notion_api_key.is_none() || self.settings.notion_database_id.is_none() {
             return;
         }
 
-        if let Some(task) = self.tasks.iter().find(|t| t.id == task_id).cloned() {
+        if let Some(pos) = self.tasks.iter().position(|t| t.id == task_id) {
             let settings = self.settings.clone();
-            // In a real app we'd need a way to update notion_id back, 
-            // but for now we push updates in background.
-            std::thread::spawn(move || {
-                let _ = crate::integrations::notion::sync_task_to_notion(&settings, &task);
-            });
+            if let Ok(notion_id) = crate::integrations::notion::sync_task_to_notion(&settings, &self.tasks[pos]) {
+                self.tasks[pos].notion_id = Some(notion_id);
+                let _ = self.save();
+            }
         }
+    }
+
+    pub fn sync_all_notion(&mut self) -> std::result::Result<usize, String> {
+        if self.settings.notion_api_key.is_none() || self.settings.notion_database_id.is_none() {
+            return Err("Notion não está configurado.".to_string());
+        }
+
+        let settings = self.settings.clone();
+        let mut synced = 0;
+        for task in &mut self.tasks {
+            let notion_id = crate::integrations::notion::sync_task_to_notion(&settings, task)?;
+            task.notion_id = Some(notion_id);
+            synced += 1;
+        }
+        self.save().map_err(|err| err.to_string())?;
+        Ok(synced)
     }
 
     pub fn add_task_full(&mut self, title: String, description: String, date_str: String, custom_review: String) {
@@ -210,6 +242,10 @@ impl App {
         }
         
         let _ = self.save();
+    }
+
+    pub fn data_dir(&self) -> Option<&std::path::Path> {
+        self.store.path().parent()
     }
 
     #[allow(dead_code)]
@@ -287,11 +323,14 @@ impl App {
     }
 
     pub fn filtered_tasks(&self) -> Vec<(usize, &Task)> {
+        if self.filter_text.is_empty() {
+            return self.tasks.iter().enumerate().collect();
+        }
+        let filter = self.filter_text.to_lowercase();
         self.tasks.iter().enumerate()
             .filter(|(_, t)| {
-                if self.filter_text.is_empty() { return true; }
-                t.title.to_lowercase().contains(&self.filter_text.to_lowercase()) ||
-                t.description.to_lowercase().contains(&self.filter_text.to_lowercase())
+                t.title.to_lowercase().contains(&filter) ||
+                t.description.to_lowercase().contains(&filter)
             })
             .collect()
     }

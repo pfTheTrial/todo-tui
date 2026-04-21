@@ -171,9 +171,8 @@ fn main() -> Result<()> {
         app.i18n = crate::i18n::I18n::new(lang);
     }
     if no_sync {
-         // Future sync logic toggle
+        println!("--no-sync: Ação registrada (sync automático não está implementado ainda).");
     }
-
 
     // Startup update check — background thread so UI doesn't block on network
     let pending_update: std::sync::Arc<std::sync::Mutex<Option<crate::utils::update::UpdateInfo>>> =
@@ -275,7 +274,7 @@ fn run_app<B: Backend>(
                     if due_count > 0 {
                         let title = app.t("notify.tasks_due_title").to_string();
                         let body = app.t("notify.tasks_due_body").replace("{}", &due_count.to_string());
-                        crate::utils::notifications::notify_pomodoro_finish(&title, &body);
+                        crate::utils::notifications::notify_tasks_due(&title, &body);
                     }
                     
                     app.settings.last_daily_digest = Some(today_str);
