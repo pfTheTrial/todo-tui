@@ -60,6 +60,16 @@ impl Task {
         }
     }
 
+    pub fn effective_date(&self) -> Option<DateTime<Utc>> {
+        if self.completed && !self.review_subtasks.is_empty() {
+            // Se está concluída mas tem sub-tarefas de revisão ativas, usa a data da review
+            if let Some(s) = self.review_subtasks.iter().find(|s| !s.completed) {
+                return Some(s.date);
+            }
+        }
+        self.due_date.or(self.review_state.next_review)
+    }
+
     pub fn generate_review_subtasks(&mut self) {
         if self.review_subtasks.iter().any(|s| s.completed) { return; }
         self.review_subtasks.clear();

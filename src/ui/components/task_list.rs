@@ -21,7 +21,7 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
 
     let filtered = app.filtered_tasks();
     for (_i, (original_idx, task)) in filtered.iter().enumerate() {
-        let cat = match task.due_date.or(task.review_state.next_review) {
+        let cat = match task.effective_date() {
             Some(dt) => {
                 let diff = dt.with_timezone(&Local).date_naive().signed_duration_since(today).num_days();
                 if diff < 0 { 0 }
@@ -54,9 +54,9 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
             crate::model::task::Importance::Low     => ("🟢", theme.success),
         };
         
-        let review_flag = if task.review_state.is_due() || task.due_date.map_or(false, |dt| dt <= chrono::Utc::now()) { "*" } else { " " };
+        let review_flag = if task.review_state.is_due() || task.effective_date().map_or(false, |dt| dt <= chrono::Utc::now()) { "*" } else { " " };
         
-        let days_left = match task.due_date.or(task.review_state.next_review) {
+        let days_left = match task.effective_date() {
             Some(dt) => {
                 let diff = dt.with_timezone(&Local).date_naive().signed_duration_since(today).num_days();
                 if diff < 0 { format!("({}d {})", -diff, app.t("days.ago")) }

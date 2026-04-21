@@ -33,7 +33,7 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
 
         let mut lines = Vec::new();
         
-        let next_rev = match task.due_date.or(task.review_state.next_review) {
+        let next_rev = match task.effective_date() {
             Some(date) => date.with_timezone(&Local).format("%d/%m/%Y").to_string(),
             None => app.t("status.scheduled").to_string(),
         };

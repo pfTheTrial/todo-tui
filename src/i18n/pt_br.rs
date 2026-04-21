@@ -183,6 +183,16 @@ pub fn get_strings() -> HashMap<&'static str, &'static str> {
     
     // Help menu title
     s.insert("menu.help.title", " MENU DE AJUDA ");
+    s.insert("help.jump", "Ir para painel");
+    s.insert("help.importance_cycle", "Mudar importância");
+    s.insert("help.sort_cycle", "Mudar ordenação");
+    s.insert("help.date_time", "Data / Prazo");
+    s.insert("help.play_pause", "Play/Pausa");
+    s.insert("help.skip_phase", "Pular fase");
+    s.insert("help.reset_pomodoro", "Resetar Pomodoro");
+    s.insert("help.force_break", "Pausa Forçada");
+    s.insert("help.toggle_help", "Mostra/Oculta ajuda");
+    s.insert("help.quit", "Sair");
 
     s
 }

@@ -235,14 +235,14 @@ impl App {
         match self.sort_mode {
             SortMode::Priority => {
                 self.tasks.sort_by(|a, b| {
-                    let cat_a = match a.due_date.or(a.review_state.next_review) {
+                    let cat_a = match a.effective_date() {
                         Some(dt) => {
                             let diff = dt.with_timezone(&Local).date_naive().signed_duration_since(today).num_days();
                             if diff < 0 { 0 } else if diff == 0 { 1 } else { 2 }
                         },
                         None => 3,
                     };
-                    let cat_b = match b.due_date.or(b.review_state.next_review) {
+                    let cat_b = match b.effective_date() {
                         Some(dt) => {
                             let diff = dt.with_timezone(&Local).date_naive().signed_duration_since(today).num_days();
                             if diff < 0 { 0 } else if diff == 0 { 1 } else { 2 }
@@ -261,8 +261,8 @@ impl App {
             }
             SortMode::Date => {
                 self.tasks.sort_by(|a, b| {
-                    let d_a = a.due_date.or(a.review_state.next_review);
-                    let d_b = b.due_date.or(b.review_state.next_review);
+                    let d_a = a.effective_date();
+                    let d_b = b.effective_date();
                     match (d_a, d_b) {
                         (Some(a), Some(b)) => a.cmp(&b),
                         (Some(_), None) => std::cmp::Ordering::Less,
