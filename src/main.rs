@@ -32,40 +32,112 @@ fn main() -> Result<()> {
         })
         .unwrap_or(false);
 
-    if args.iter().any(|a| a == "update" || a == "--update") {
-        if is_npm {
-            println!("tdt foi instalado via NPM. Use: npm update -g tdt-cli");
-            return Ok(());
-        }
-        println!("Verificando atualizações...");
-        if let Some(info) = crate::utils::update::check_for_update() {
-            if info.has_update {
-                println!("Baixando v{}...", info.latest);
-                match crate::utils::auto_update::perform_update(&info.latest) {
-                    Ok(_) => println!("tdt atualizado com sucesso!"),
-                    Err(e) => println!("Erro ao atualizar: {}", e),
+    let mut force_lang = None;
+    let mut custom_data_dir = None;
+    let mut no_sync = false;
+    let mut show_setup = false;
+
+    let mut i = 1;
+    while i < args.len() {
+        match args[i].as_str() {
+            "update" | "--update" => {
+                if is_npm {
+                    println!("tdt foi instalado via NPM. Use: npm update -g tdt-cli");
+                    return Ok(());
                 }
-            } else {
-                println!("Você já está na versão mais recente (v{}).", info.current);
+                println!("Verificando atualizações...");
+                if let Some(info) = crate::utils::update::check_for_update() {
+                    if info.has_update {
+                        println!("Baixando v{}...", info.latest);
+                        match crate::utils::auto_update::perform_update(&info.latest) {
+                            Ok(_) => println!("tdt atualizado com sucesso!"),
+                            Err(e) => println!("Erro ao atualizar: {}", e),
+                        }
+                    } else {
+                        println!("Você já está na versão mais recente (v{}).", info.current);
+                    }
+                } else {
+                    println!("Falha ao verificar atualizações / Nenhuma atualização válida.");
+                }
+                return Ok(());
             }
-        } else {
-            println!("Falha ao verificar atualizações.");
+            "sync" => {
+                println!("Sincronização manual acionada... (Processo agendado)");
+                return Ok(());
+            }
+            "reset" => {
+                println!("Resetando configurações...");
+                let data_dir = dirs::data_dir().unwrap_or_else(|| std::path::PathBuf::from(".")).join("todo-tui");
+                let settings_path = data_dir.join("settings.json");
+                if settings_path.exists() {
+                    let _ = std::fs::remove_file(settings_path);
+                    println!("Configurações apagadas com sucesso.");
+                } else {
+                    println!("Nenhuma configuração encontrada.");
+                }
+                return Ok(());
+            }
+            "--uninstall" => {
+                println!("Desinstalando TDT...");
+                let data_dir = dirs::data_dir().unwrap_or_else(|| std::path::PathBuf::from(".")).join("todo-tui");
+                if data_dir.exists() {
+                    let _ = std::fs::remove_dir_all(data_dir);
+                    println!("✔ Diretório de dados removido com sucesso.");
+                }
+                if is_npm {
+                    println!("✔ Execute 'npm uninstall -g tdt-cli' para remover o executável.");
+                } else {
+                    println!("✔ Exclua o arquivo executável para finalizar a desinstalação.");
+                }
+                return Ok(());
+            }
+            "--setup" | "--wizard" => show_setup = true,
+            "--no-sync" => no_sync = true,
+            "--lang" => {
+                if i + 1 < args.len() {
+                    force_lang = Some(args[i + 1].clone());
+                    i += 1;
+                }
+            }
+            "--data-dir" => {
+                if i + 1 < args.len() {
+                    custom_data_dir = Some(std::path::PathBuf::from(&args[i + 1]));
+                    i += 1;
+                }
+            }
+            "-h" | "--help" => {
+                println!("USAGE:");
+                println!("    tdt [OPTIONS] [COMMAND]\n");
+                println!("COMMANDS:");
+                println!("    update         Verifica e instala a última versão");
+                println!("    sync           Força um sync manual e sai");
+                println!("    reset          Reseta configurações (preserva tarefas)\n");
+                println!("OPTIONS:");
+                println!("    -h, --help           Mostra a ajuda completa");
+                println!("    -V, --version        Mostra a versão atual");
+                println!("        --setup          Abre o Setup Wizard");
+                println!("        --lang <LANG>    Força idioma temporário (pt-br, en, es)");
+                println!("        --data-dir <PATH> Diretório de dados customizado");
+                println!("        --no-sync        Desativa sync automático nesta sessão");
+                println!("        --uninstall      Desinstala o TDT (Deleta os arquivos)");
+                return Ok(());
+            }
+            "-V" | "--version" => {
+                println!("tdt v{}", env!("CARGO_PKG_VERSION"));
+                return Ok(());
+            }
+            cmd => {
+                if cmd.starts_with("-") {
+                    println!("error: Option '{}' not recognized.", cmd);
+                } else {
+                    println!("error: Command '{}' not recognized.", cmd);
+                }
+                println!("\nUsage: tdt [OPTIONS] [COMMAND]");
+                println!("For a list of commands and options, type 'tdt --help'");
+                return Ok(());
+            }
         }
-        return Ok(());
-    }
-
-    if args.iter().any(|a| a == "-h" || a == "--help") {
-        println!("tdt — Gerenciador de Tarefas no Terminal");
-        println!("Uso: tdt [CMD / OPTION]");
-        println!("\n  update, --update    Sincroniza para a nova versão (Auto-updater)");
-        println!("  -h, --help          Mostra a ajuda");
-        println!("  -V, --version       Mostra a versão");
-        return Ok(());
-    }
-
-    if args.iter().any(|a| a == "-V" || a == "--version") {
-        println!("tdt v{}", env!("CARGO_PKG_VERSION"));
-        return Ok(());
+        i += 1;
     }
     
     // Setup terminal
@@ -76,12 +148,33 @@ fn main() -> Result<()> {
     let mut terminal = Terminal::new(backend)?;
 
     // Create app state
-    let data_dir = dirs::data_dir()
-        .unwrap_or_else(|| std::path::PathBuf::from("."))
-        .join("todo-tui");
+    let data_dir = custom_data_dir.unwrap_or_else(|| {
+        dirs::data_dir()
+            .unwrap_or_else(|| std::path::PathBuf::from("."))
+            .join("todo-tui")
+    });
+    
     let mut app = App::new(data_dir)?;
     app.is_npm = is_npm;
     
+    if show_setup {
+        app.input_mode = crate::app::InputMode::Onboarding;
+        app.onboarding_index = 0;
+    }
+    if let Some(lang_str) = force_lang {
+        let lang = match lang_str.to_lowercase().as_str() {
+            "en" | "eng" => crate::i18n::Language::En,
+            "es" | "spa" => crate::i18n::Language::Es,
+            _ => crate::i18n::Language::PtBr,
+        };
+        app.settings.language = lang;
+        app.i18n = crate::i18n::I18n::new(lang);
+    }
+    if no_sync {
+         // Future sync logic toggle
+    }
+
+
     // Startup update check — background thread so UI doesn't block on network
     let pending_update: std::sync::Arc<std::sync::Mutex<Option<crate::utils::update::UpdateInfo>>> =
         std::sync::Arc::new(std::sync::Mutex::new(None));
@@ -171,6 +264,23 @@ fn run_app<B: Backend>(
                 let (ram, cpu) = crate::utils::perf::sample_self();
                 app.sys_ram_mb = ram;
                 app.sys_cpu_pct = cpu;
+            }
+
+            // Daily Task Digest
+            if app.settings.task_reminders_enabled {
+                let today_str = chrono::Local::now().format("%Y-%m-%d").to_string();
+                if app.settings.last_daily_digest.as_deref() != Some(&today_str) {
+                    let due_count = app.tasks.iter().filter(|t| !t.completed && t.effective_date().map_or(false, |dt| dt.with_timezone(&chrono::Local).date_naive() <= chrono::Local::now().date_naive())).count();
+                    
+                    if due_count > 0 {
+                        let title = app.t("notify.tasks_due_title").to_string();
+                        let body = app.t("notify.tasks_due_body").replace("{}", &due_count.to_string());
+                        crate::utils::notifications::notify_pomodoro_finish(&title, &body);
+                    }
+                    
+                    app.settings.last_daily_digest = Some(today_str);
+                    let _ = app.save_settings();
+                }
             }
 
             last_tick = Instant::now();

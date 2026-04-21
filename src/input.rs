@@ -272,22 +272,25 @@ fn handle_menu_settings(app: &mut App, key: KeyEvent) -> bool {
                     let next_idx = (current_idx + 1) % langs.len();
                     app.set_language(langs[next_idx]);
                 }
-                // 🔔 SYSTEM
                 2 => {
                     app.settings.notifications_enabled = !app.settings.notifications_enabled;
                     let _ = app.save_settings();
                 }
                 3 => {
+                    app.settings.task_reminders_enabled = !app.settings.task_reminders_enabled;
+                    let _ = app.save_settings();
+                }
+                4 => {
                     app.settings.startup_with_windows = !app.settings.startup_with_windows;
                     let _ = app.save_settings();
                 }
                 // 🔗 SYNC & INTEGRATIONS — open sync submenu
-                4 => {
+                5 => {
                     app.input_mode = InputMode::MenuSync;
                     app.menu_cursor = 0;
                 }
                 // 🔄 UPDATE
-                5 => {
+                6 => {
                     if app.is_npm {
                         app.status_message = Some(app.t("msg.npm_update").to_string());
                     } else if let Some(ref info) = app.update_info {
@@ -301,7 +304,7 @@ fn handle_menu_settings(app: &mut App, key: KeyEvent) -> bool {
                     }
                 }
                 // 📊 PERFORMANCE — read only
-                6 => {}
+                7 => {}
                 _ => {}
             }
         }

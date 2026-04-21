@@ -11,7 +11,13 @@ pub struct AppSettings {
     pub notion_api_key: Option<String>,
     pub notion_database_id: Option<String>,
     pub is_first_run: bool,
+    #[serde(default = "default_true")]
+    pub task_reminders_enabled: bool,
+    #[serde(default)]
+    pub last_daily_digest: Option<String>,
 }
+
+fn default_true() -> bool { true }
 
 impl Default for AppSettings {
     fn default() -> Self {
@@ -24,6 +30,8 @@ impl Default for AppSettings {
             notion_api_key: None,
             notion_database_id: None,
             is_first_run: true,
+            task_reminders_enabled: true,
+            last_daily_digest: None,
         }
     }
 }

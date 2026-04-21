@@ -64,7 +64,8 @@ pub fn get_strings() -> HashMap<&'static str, &'static str> {
     // Menus
     s.insert("menu.settings.title", " ⚙ Configuración ");
     s.insert("menu.settings.theme", "Tema");
-    s.insert("menu.settings.notifications", "Notificaciones");
+    s.insert("menu.settings.notif_pomo", "Notificaciones (Pomodoro)");
+    s.insert("menu.settings.notif_tasks", "Recordatorio Diario (Tareas)");
     s.insert("menu.settings.startup", "Iniciar con Windows");
     s.insert("menu.settings.language", "Idioma");
     

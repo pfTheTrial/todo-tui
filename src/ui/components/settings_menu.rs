@@ -7,8 +7,8 @@ use ratatui::{
 };
 use crate::app::App;
 
-// Items: Appearance(2) + System(2) + Sync(1) + Update(1) + Stats(1) = 7
-pub const SETTINGS_ITEM_COUNT: usize = 7;
+// Items: Appearance(2) + System(3) + Sync(1) + Update(1) + Stats(1) = 8
+pub const SETTINGS_ITEM_COUNT: usize = 8;
 
 pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
     let theme = &app.theme;
@@ -26,7 +26,8 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
         (app.t("menu.settings.theme").to_string(),         app.theme.name.clone()),
         (app.t("menu.settings.language").to_string(),      app.settings.language.code().to_string()),
         // 🔔 SYSTEM
-        (app.t("menu.settings.notifications").to_string(), if app.settings.notifications_enabled { "ON".into() } else { "OFF".into() }),
+        (app.t("menu.settings.notif_pomo").to_string(), if app.settings.notifications_enabled { "ON".into() } else { "OFF".into() }),
+        (app.t("menu.settings.notif_tasks").to_string(), if app.settings.task_reminders_enabled { "ON".into() } else { "OFF".into() }),
         (app.t("menu.settings.startup").to_string(),       if app.settings.startup_with_windows { "ON".into() } else { "OFF".into() }),
         // 🔗 INTEGRATIONS (→ opens sync submenu)
         (app.t("settings.section.integrations").to_string(), {
@@ -68,7 +69,7 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
                     format!("  {}", app.t("settings.section.system")), header_style,
                 )));
             }
-            4 => {
+            5 => {
                 lines.push(Line::from(Span::styled(&separator, Style::default().fg(theme.muted))));
             }
             _ => {}

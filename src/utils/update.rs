@@ -24,7 +24,12 @@ pub fn check_for_update() -> Option<UpdateInfo> {
     let latest_tag = body["tag_name"].as_str().unwrap_or("").trim_start_matches('v').to_string();
     let html_url = body["html_url"].as_str().unwrap_or("").to_string();
 
-    let has_update = !latest_tag.is_empty() && latest_tag != current_version;
+    let platform_asset = crate::utils::auto_update::get_platform_asset_name();
+    let has_valid_asset = body["assets"].as_array()
+        .map(|assets| assets.iter().any(|a| a["name"].as_str().unwrap_or("") == platform_asset))
+        .unwrap_or(false);
+
+    let has_update = !latest_tag.is_empty() && latest_tag != current_version && has_valid_asset;
 
     Some(UpdateInfo {
         current: current_version,
