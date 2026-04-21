@@ -36,7 +36,9 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
         }),
         // 🔄 UPDATE
         (app.t("menu.settings.update").to_string(), {
-            if let Some(ref info) = app.update_info {
+            if app.is_npm {
+                app.t("settings.npm_managed").to_string()
+            } else if let Some(ref info) = app.update_info {
                 if info.has_update {
                     format!("v{} {}", info.latest, app.t("update.available"))
                 } else {

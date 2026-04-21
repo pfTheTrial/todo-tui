@@ -133,6 +133,8 @@ pub fn get_strings() -> HashMap<&'static str, &'static str> {
     s.insert("msg.imported", "tasks imported");
     s.insert("msg.update_error", "Error checking for updates");
     s.insert("msg.update_checking", "Checking for updates...");
+    s.insert("settings.npm_managed", "NPM Managed");
+    s.insert("msg.npm_update", "Update using: npm update -g tdt-cli");
     
     // Performance stats
     s.insert("settings.perf.title", "📊 Performance");

@@ -288,7 +288,9 @@ fn handle_menu_settings(app: &mut App, key: KeyEvent) -> bool {
                 }
                 // 🔄 UPDATE
                 5 => {
-                    if let Some(ref info) = app.update_info {
+                    if app.is_npm {
+                        app.status_message = Some(app.t("msg.npm_update").to_string());
+                    } else if let Some(ref info) = app.update_info {
                         if info.has_update {
                             app.input_mode = InputMode::ConfirmingUpdate;
                         } else {

@@ -24,6 +24,50 @@ use crate::app::App;
 fn main() -> Result<()> {
     color_eyre::install()?;
     
+    let args: Vec<String> = std::env::args().collect();
+    let is_npm = std::env::current_exe()
+        .map(|p| {
+            let p_str = p.to_string_lossy().to_lowercase();
+            p_str.contains("node_modules") || p_str.contains("npm") || p_str.contains("nvm")
+        })
+        .unwrap_or(false);
+
+    if args.iter().any(|a| a == "update" || a == "--update") {
+        if is_npm {
+            println!("tdt foi instalado via NPM. Use: npm update -g tdt-cli");
+            return Ok(());
+        }
+        println!("Verificando atualizações...");
+        if let Some(info) = crate::utils::update::check_for_update() {
+            if info.has_update {
+                println!("Baixando v{}...", info.latest);
+                match crate::utils::auto_update::perform_update(&info.latest) {
+                    Ok(_) => println!("tdt atualizado com sucesso!"),
+                    Err(e) => println!("Erro ao atualizar: {}", e),
+                }
+            } else {
+                println!("Você já está na versão mais recente (v{}).", info.current);
+            }
+        } else {
+            println!("Falha ao verificar atualizações.");
+        }
+        return Ok(());
+    }
+
+    if args.iter().any(|a| a == "-h" || a == "--help") {
+        println!("tdt — Gerenciador de Tarefas no Terminal");
+        println!("Uso: tdt [CMD / OPTION]");
+        println!("\n  update, --update    Sincroniza para a nova versão (Auto-updater)");
+        println!("  -h, --help          Mostra a ajuda");
+        println!("  -V, --version       Mostra a versão");
+        return Ok(());
+    }
+
+    if args.iter().any(|a| a == "-V" || a == "--version") {
+        println!("tdt v{}", env!("CARGO_PKG_VERSION"));
+        return Ok(());
+    }
+    
     // Setup terminal
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -36,11 +80,14 @@ fn main() -> Result<()> {
         .unwrap_or_else(|| std::path::PathBuf::from("."))
         .join("todo-tui");
     let mut app = App::new(data_dir)?;
+    app.is_npm = is_npm;
     
     // Startup update check — background thread so UI doesn't block on network
     let pending_update: std::sync::Arc<std::sync::Mutex<Option<crate::utils::update::UpdateInfo>>> =
         std::sync::Arc::new(std::sync::Mutex::new(None));
-    {
+    
+    // Only auto-check if not installed by NPM (NPM users should use npm update)
+    if !is_npm {
         let pending = pending_update.clone();
         std::thread::spawn(move || {
             if let Some(info) = crate::utils::update::check_for_update() {

@@ -75,6 +75,7 @@ pub struct App {
     pub sort_mode: SortMode,
     pub frame_count: u64,
     pub onboarding_index: usize,
+    pub is_npm: bool,
     // Resource usage (sampled periodically, not every frame)
     pub sys_ram_mb: f32,
     pub sys_cpu_pct: f32,
@@ -138,6 +139,7 @@ impl App {
             sort_mode: SortMode::Priority,
             frame_count: 0,
             onboarding_index: 0,
+            is_npm: false, // Calculated after instantiation
             sys_ram_mb: 0.0,
             sys_cpu_pct: 0.0,
         };

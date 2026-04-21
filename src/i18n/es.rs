@@ -133,6 +133,8 @@ pub fn get_strings() -> HashMap<&'static str, &'static str> {
     s.insert("msg.imported", "tareas importadas");
     s.insert("msg.update_error", "Error al verificar actualizaciones");
     s.insert("msg.update_checking", "Verificando actualizaciones...");
+    s.insert("settings.npm_managed", "NPM Managed");
+    s.insert("msg.npm_update", "Actualice usando: npm update -g tdt-cli");
     
     // Performance stats
     s.insert("settings.perf.title", "📊 Rendimiento");
