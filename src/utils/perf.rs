@@ -76,7 +76,7 @@ fn get_cpu_pct() -> f32 {
 
         #[repr(C)]
         #[allow(non_snake_case)]
-        struct FILETIME {
+        struct Filetime {
             dwLowDateTime: u32,
             dwHighDateTime: u32,
         }
@@ -85,10 +85,10 @@ fn get_cpu_pct() -> f32 {
             fn GetCurrentProcess() -> *mut u8;
             fn GetProcessTimes(
                 hProcess: *mut u8,
-                lpCreationTime: *mut FILETIME,
-                lpExitTime: *mut FILETIME,
-                lpKernelTime: *mut FILETIME,
-                lpUserTime: *mut FILETIME,
+                lpCreationTime: *mut Filetime,
+                lpExitTime: *mut Filetime,
+                lpKernelTime: *mut Filetime,
+                lpUserTime: *mut Filetime,
             ) -> i32;
             fn GetSystemInfo(lpSystemInfo: *mut SystemInfo);
         }
@@ -115,10 +115,10 @@ fn get_cpu_pct() -> f32 {
             static LAST_WALL_NS: AtomicU64 = AtomicU64::new(0);
 
             let proc = GetCurrentProcess();
-            let mut creation = mem::zeroed::<FILETIME>();
-            let mut exit = mem::zeroed::<FILETIME>();
-            let mut kernel = mem::zeroed::<FILETIME>();
-            let mut user = mem::zeroed::<FILETIME>();
+            let mut creation = mem::zeroed::<Filetime>();
+            let mut exit = mem::zeroed::<Filetime>();
+            let mut kernel = mem::zeroed::<Filetime>();
+            let mut user = mem::zeroed::<Filetime>();
 
             GetProcessTimes(proc, &mut creation, &mut exit, &mut kernel, &mut user);
             let cpu_now = ((kernel.dwHighDateTime as u64) << 32 | kernel.dwLowDateTime as u64)
@@ -144,7 +144,7 @@ fn get_cpu_pct() -> f32 {
             }
             // cpu_delta is in 100ns units, wall_delta in ns
             let pct = (cpu_delta as f32 * 100.0) / (wall_delta as f32 / 100.0) / ncpu;
-            pct.min(100.0).max(0.0)
+            pct.clamp(0.0, 100.0)
         }
     }
 
@@ -174,7 +174,7 @@ fn get_cpu_pct() -> f32 {
                     prev.map_or(1.0, |p| now.duration_since(p).as_secs_f32())
                 });
                 let pct = (delta_ticks as f32 / clk_tck as f32 / delta_secs) * 100.0;
-                return pct.min(100.0).max(0.0);
+                return pct.clamp(0.0, 100.0);
             }
         }
         0.0

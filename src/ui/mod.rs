@@ -7,42 +7,36 @@ pub mod theme;
 use crate::app::App;
 
 pub fn draw(f: &mut Frame, app: &mut App) {
-    let has_update = app.update_info.as_ref().map_or(false, |i| i.has_update);
-    
+    let has_update = app.update_info.as_ref().is_some_and(|i| i.has_update);
+
     let screen = if has_update {
         Layout::vertical([
-            Constraint::Length(1),  // Update banner
+            Constraint::Length(1), // Update banner
             Constraint::Min(0),    // Main content
             Constraint::Length(1), // Footer
-        ]).split(f.area())
+        ])
+        .split(f.area())
     } else {
-        Layout::vertical([
-            Constraint::Min(0),
-            Constraint::Length(1),
-        ]).split(f.area())
+        Layout::vertical([Constraint::Min(0), Constraint::Length(1)]).split(f.area())
     };
-    
+
     let (main_area, footer_area) = if has_update {
         (screen[1], screen[2])
     } else {
         (screen[0], screen[1])
     };
-    
+
     // Update banner (top)
     if has_update {
         components::update_banner::draw(f, app, screen[0]);
     }
-    
+
     // Main layout (lazygit style)
-    let main = Layout::horizontal([
-        Constraint::Percentage(35),
-        Constraint::Percentage(65),
-    ]).split(main_area);
-    
-    let right = Layout::vertical([
-        Constraint::Percentage(60),
-        Constraint::Percentage(40),
-    ]).split(main[1]);
+    let main = Layout::horizontal([Constraint::Percentage(35), Constraint::Percentage(65)])
+        .split(main_area);
+
+    let right =
+        Layout::vertical([Constraint::Percentage(60), Constraint::Percentage(40)]).split(main[1]);
 
     // Render Components
     components::task_list::draw(f, app, main[0]);

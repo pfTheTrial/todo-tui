@@ -1,5 +1,5 @@
+use chrono::{DateTime, Duration, Utc};
 use serde::{Deserialize, Serialize};
-use chrono::{DateTime, Utc, Duration};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ReviewConfig {
@@ -14,23 +14,12 @@ impl Default for ReviewConfig {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
 pub struct ReviewState {
     pub current_step: usize,
     pub last_review: Option<DateTime<Utc>>,
     pub next_review: Option<DateTime<Utc>>,
     pub completed_count: usize,
-}
-
-impl Default for ReviewState {
-    fn default() -> Self {
-        Self {
-            current_step: 0,
-            last_review: None,
-            next_review: None,
-            completed_count: 0,
-        }
-    }
 }
 
 impl ReviewState {

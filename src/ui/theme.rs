@@ -1,6 +1,5 @@
 use ratatui::style::Color;
 
-
 #[derive(Debug, Clone)]
 pub struct Theme {
     pub name: String,
@@ -25,12 +24,12 @@ impl Theme {
             name: "Dracula".into(),
             bg: Color::Rgb(40, 42, 54),
             fg: Color::Rgb(248, 248, 242),
-            accent: Color::Rgb(189, 147, 249), // Purple
+            accent: Color::Rgb(189, 147, 249),           // Purple
             accent_secondary: Color::Rgb(255, 121, 198), // Pink
-            success: Color::Rgb(80, 250, 123), // Green
-            warning: Color::Rgb(241, 250, 140), // Yellow
-            error: Color::Rgb(255, 85, 85), // Red
-            muted: Color::Rgb(98, 114, 164), // Comment
+            success: Color::Rgb(80, 250, 123),           // Green
+            warning: Color::Rgb(241, 250, 140),          // Yellow
+            error: Color::Rgb(255, 85, 85),              // Red
+            muted: Color::Rgb(98, 114, 164),             // Comment
             selection_bg: Color::Rgb(68, 71, 90),
             selection_fg: Color::Rgb(248, 248, 242),
             footer_bg: Color::Rgb(189, 147, 249),
@@ -44,12 +43,12 @@ impl Theme {
             name: "Catppuccin".into(),
             bg: Color::Rgb(30, 30, 46),
             fg: Color::Rgb(205, 214, 244),
-            accent: Color::Rgb(137, 180, 250), // Blue
+            accent: Color::Rgb(137, 180, 250),           // Blue
             accent_secondary: Color::Rgb(203, 166, 247), // Mauve
-            success: Color::Rgb(166, 227, 161), // Green
-            warning: Color::Rgb(249, 226, 175), // Yellow
-            error: Color::Rgb(243, 139, 168), // Red
-            muted: Color::Rgb(108, 112, 134), // Overlay
+            success: Color::Rgb(166, 227, 161),          // Green
+            warning: Color::Rgb(249, 226, 175),          // Yellow
+            error: Color::Rgb(243, 139, 168),            // Red
+            muted: Color::Rgb(108, 112, 134),            // Overlay
             selection_bg: Color::Rgb(49, 50, 68),
             selection_fg: Color::Rgb(205, 214, 244),
             footer_bg: Color::Rgb(180, 190, 254),
@@ -82,7 +81,7 @@ impl Theme {
             name: "Gruvbox".into(),
             bg: Color::Rgb(40, 40, 40),
             fg: Color::Rgb(235, 219, 178),
-            accent: Color::Rgb(215, 153, 33), // Gold
+            accent: Color::Rgb(215, 153, 33),          // Gold
             accent_secondary: Color::Rgb(214, 93, 14), // Orange
             success: Color::Rgb(152, 151, 26),
             warning: Color::Rgb(250, 189, 47),
@@ -101,7 +100,7 @@ impl Theme {
             name: "Tokyo Night".into(),
             bg: Color::Rgb(26, 27, 38),
             fg: Color::Rgb(169, 177, 214),
-            accent: Color::Rgb(122, 162, 247), // Blue
+            accent: Color::Rgb(122, 162, 247),           // Blue
             accent_secondary: Color::Rgb(187, 154, 247), // Purple
             success: Color::Rgb(158, 206, 106),
             warning: Color::Rgb(224, 175, 104),
@@ -120,7 +119,7 @@ impl Theme {
             name: "Solarized".into(),
             bg: Color::Rgb(0, 43, 54),
             fg: Color::Rgb(131, 148, 150),
-            accent: Color::Rgb(38, 139, 210), // Blue
+            accent: Color::Rgb(38, 139, 210),            // Blue
             accent_secondary: Color::Rgb(108, 113, 196), // Violet
             success: Color::Rgb(133, 153, 0),
             warning: Color::Rgb(181, 137, 0),

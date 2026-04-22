@@ -3,9 +3,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PomodoroProfile {
     pub name: String,
-    pub work_duration: u32,  // Minutes
-    pub short_break: u32,    // Minutes
-    pub long_break: u32,     // Minutes
+    pub work_duration: u32, // Minutes
+    pub short_break: u32,   // Minutes
+    pub long_break: u32,    // Minutes
 }
 
 impl Default for PomodoroProfile {
@@ -25,12 +25,12 @@ pub struct Pomodoro {
     pub profiles: Vec<PomodoroProfile>,
     #[serde(default)]
     pub active_profile_index: usize,
-    
+
     pub sessions_until_long: u32,
     pub current_session_count: u32,
     #[serde(default)]
     pub total_sessions_completed: u32,
-    
+
     // Runtime state
     pub remaining_seconds: u32,
     pub is_running: bool,
@@ -39,9 +39,24 @@ pub struct Pomodoro {
 
 fn default_profiles() -> Vec<PomodoroProfile> {
     vec![
-        PomodoroProfile { name: "Tradicional".into(), work_duration: 25, short_break: 5, long_break: 15 },
-        PomodoroProfile { name: "Focus 50".into(), work_duration: 50, short_break: 10, long_break: 30 },
-        PomodoroProfile { name: "Rápido".into(), work_duration: 15, short_break: 2, long_break: 5 },
+        PomodoroProfile {
+            name: "Tradicional".into(),
+            work_duration: 25,
+            short_break: 5,
+            long_break: 15,
+        },
+        PomodoroProfile {
+            name: "Focus 50".into(),
+            work_duration: 50,
+            short_break: 10,
+            long_break: 30,
+        },
+        PomodoroProfile {
+            name: "Rápido".into(),
+            work_duration: 15,
+            short_break: 2,
+            long_break: 5,
+        },
     ]
 }
 
@@ -69,7 +84,10 @@ impl Default for Pomodoro {
 
 impl Pomodoro {
     pub fn active_profile(&self) -> PomodoroProfile {
-        self.profiles.get(self.active_profile_index).cloned().unwrap_or_default()
+        self.profiles
+            .get(self.active_profile_index)
+            .cloned()
+            .unwrap_or_default()
     }
 
     pub fn tick(&mut self) -> bool {
@@ -78,7 +96,7 @@ impl Pomodoro {
         }
 
         self.remaining_seconds -= 1;
-        
+
         if self.remaining_seconds == 0 {
             self.is_running = false;
             return true; // Finished
@@ -100,7 +118,10 @@ impl Pomodoro {
         match self.phase {
             PomodoroPhase::Work => {
                 self.current_session_count += 1;
-                if self.current_session_count % self.sessions_until_long == 0 {
+                if self
+                    .current_session_count
+                    .is_multiple_of(self.sessions_until_long)
+                {
                     self.phase = PomodoroPhase::LongBreak;
                 } else {
                     self.phase = PomodoroPhase::ShortBreak;
@@ -115,7 +136,11 @@ impl Pomodoro {
 
     pub fn force_break(&mut self) {
         if self.phase == PomodoroPhase::Work {
-            if self.current_session_count > 0 && self.current_session_count % self.sessions_until_long == 0 {
+            if self.current_session_count > 0
+                && self
+                    .current_session_count
+                    .is_multiple_of(self.sessions_until_long)
+            {
                 self.phase = PomodoroPhase::LongBreak;
             } else {
                 self.phase = PomodoroPhase::ShortBreak;
@@ -131,8 +156,50 @@ impl Pomodoro {
             PomodoroPhase::ShortBreak => profile.short_break * 60,
             PomodoroPhase::LongBreak => profile.long_break * 60,
         } as f64;
-        
-        if total == 0.0 { return 1.0; }
+
+        if total == 0.0 {
+            return 1.0;
+        }
         (total - self.remaining_seconds as f64) / total
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{Pomodoro, PomodoroPhase};
+
+    #[test]
+    fn tick_finishes_when_remaining_reaches_zero() {
+        let mut pomodoro = Pomodoro {
+            remaining_seconds: 1,
+            is_running: true,
+            ..Pomodoro::default()
+        };
+
+        assert!(pomodoro.tick());
+        assert_eq!(pomodoro.remaining_seconds, 0);
+        assert!(!pomodoro.is_running);
+    }
+
+    #[test]
+    fn next_phase_after_work_uses_short_break_until_long_interval() {
+        let mut pomodoro = Pomodoro::default();
+        pomodoro.next_phase();
+        assert_eq!(pomodoro.phase, PomodoroPhase::ShortBreak);
+
+        pomodoro.phase = PomodoroPhase::Work;
+        pomodoro.current_session_count = 3;
+        pomodoro.next_phase();
+        assert_eq!(pomodoro.phase, PomodoroPhase::LongBreak);
+    }
+
+    #[test]
+    fn reset_uses_active_profile_duration() {
+        let mut pomodoro = Pomodoro {
+            phase: PomodoroPhase::ShortBreak,
+            ..Pomodoro::default()
+        };
+        pomodoro.reset();
+        assert_eq!(pomodoro.remaining_seconds, 5 * 60);
     }
 }

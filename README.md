@@ -13,7 +13,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Rust](https://img.shields.io/badge/rust-stable-orange.svg)](https://www.rust-lang.org)
-[![Version](https://img.shields.io/badge/version-1.1.0-blue.svg)](https://github.com/pfTheTrial/todo-tui/releases)
+[![Version](https://img.shields.io/badge/version-1.0.2-blue.svg)](https://github.com/pfTheTrial/todo-tui/releases)
 
 <img src="docs/demo.gif" width="800" alt="tdt demo animado mostrando tarefas, pomodoro e configurações reativas"/>
 
@@ -43,11 +43,11 @@
 
 ```bash
 # Via NPM / PNPM (instala globalmente e baixa o binário automaticamente)
-npm install -g tdt-cli
-pnpm add -g tdt-cli
+npm install -g todo-tui
+pnpm add -g todo-tui
 
 # Via NPX (testar sem instalar)
-npx tdt-cli
+npx todo-tui
 
 # Via Shell Installer (Windows - Powershell)
 iwr -useb https://raw.githubusercontent.com/pfTheTrial/todo-tui/main/install.ps1 | iex
@@ -231,7 +231,7 @@ Selecione um perfil, pressione "e":
 | **Syncthing** | 🔨 | Status de sincronização + hot-reload silencioso |
 | **Schema Versioning** | 🔨 | Migração automática de dados entre versões |
 | **Shell Installer** | 🔨 | Instalador one-liner para Windows/Linux/macOS |
-| **NPM Distribution** | 🔨 | Pacote `tdt-cli` para npm/pnpm/npx |
+| **NPM Distribution** | 🔨 | Pacote `todo-tui` para npm/pnpm/npx |
 
 ---
 
@@ -289,7 +289,7 @@ cargo build --release
 - [ ] Integração Syncthing (status + hot-reload)
 - [ ] CLI completa com `clap` (flags, subcomandos)
 - [ ] Schema versioning + backup automático
-- [ ] Distribuição NPM (`tdt-cli`)
+- [ ] Distribuição NPM (`todo-tui`)
 - [ ] Shell Installer (Powershell/Bash)
 - [ ] Suporte Android (Termux)
 
@@ -328,11 +328,11 @@ cargo build --release
 
 ```bash
 # Via NPM / PNPM (installs globally and downloads the correct binary automatically)
-npm install -g tdt-cli
-pnpm add -g tdt-cli
+npm install -g todo-tui
+pnpm add -g todo-tui
 
 # Via NPX (try without installing)
-npx tdt-cli
+npx todo-tui
 
 # Via Shell Installer (Windows - Powershell)
 iwr -useb https://raw.githubusercontent.com/pfTheTrial/todo-tui/main/install.ps1 | iex
@@ -508,7 +508,7 @@ Select profile, press "e":
 | **Syncthing** | 🔨 | Sync status + silent hot-reload |
 | **Schema Versioning** | 🔨 | Automatic data migration between versions |
 | **Shell Installer** | 🔨 | One-liner installer for Windows/Linux/macOS |
-| **NPM Distribution** | 🔨 | `tdt-cli` package for npm/pnpm/npx |
+| **NPM Distribution** | 🔨 | `todo-tui` package for npm/pnpm/npx |
 
 ---
 
@@ -566,7 +566,7 @@ cargo build --release
 - [ ] Syncthing integration (status + hot-reload)
 - [ ] Full CLI with `clap` (flags, subcommands)
 - [ ] Schema versioning + automatic backups
-- [ ] NPM distribution (`tdt-cli`)
+- [ ] NPM distribution (`todo-tui`)
 - [ ] Shell Installer (Powershell/Bash)
 - [ ] Android support (Termux)
 

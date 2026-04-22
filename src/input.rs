@@ -1,5 +1,5 @@
+use crate::app::{ActivePanel, App, InputMode};
 use crossterm::event::{KeyCode, KeyEvent};
-use crate::app::{App, InputMode, ActivePanel};
 
 pub fn handle_key(app: &mut App, key: KeyEvent) -> bool {
     match app.input_mode {
@@ -20,6 +20,7 @@ pub fn handle_key(app: &mut App, key: KeyEvent) -> bool {
             if let Some(task) = a.current_task_mut() {
                 task.due_date = crate::utils::parse_date_input(&text);
                 task.generate_review_subtasks();
+                task.mark_updated();
             }
             a.sort_tasks();
             let _ = a.save();
@@ -61,24 +62,32 @@ fn handle_normal(app: &mut App, key: KeyEvent) -> bool {
                 app.show_help = false;
             }
         }
-        KeyCode::Char('j') | KeyCode::Down => {
-            match app.active_panel {
-                ActivePanel::Pomodoro => app.next_pomodoro_profile(),
-                ActivePanel::TaskDetail => app.scroll_detail_down(),
-                _ => app.next_task(),
-            }
+        KeyCode::Char('j') | KeyCode::Down => match app.active_panel {
+            ActivePanel::Pomodoro => app.next_pomodoro_profile(),
+            ActivePanel::TaskDetail => app.scroll_detail_down(),
+            _ => app.next_task(),
+        },
+        KeyCode::Char('k') | KeyCode::Up => match app.active_panel {
+            ActivePanel::Pomodoro => app.prev_pomodoro_profile(),
+            ActivePanel::TaskDetail => app.scroll_detail_up(),
+            _ => app.previous_task(),
+        },
+        KeyCode::Char('J') => {
+            app.next_task();
+            app.detail_scroll_offset = 0;
         }
-        KeyCode::Char('k') | KeyCode::Up => {
-            match app.active_panel {
-                ActivePanel::Pomodoro => app.prev_pomodoro_profile(),
-                ActivePanel::TaskDetail => app.scroll_detail_up(),
-                _ => app.previous_task(),
-            }
+        KeyCode::Char('K') => {
+            app.previous_task();
+            app.detail_scroll_offset = 0;
         }
-        KeyCode::Char('J') => { app.next_task(); app.detail_scroll_offset = 0; }
-        KeyCode::Char('K') => { app.previous_task(); app.detail_scroll_offset = 0; }
-        KeyCode::Char('g') => { app.go_to_first_task(); app.detail_scroll_offset = 0; }
-        KeyCode::Char('G') => { app.go_to_last_task(); app.detail_scroll_offset = 0; }
+        KeyCode::Char('g') => {
+            app.go_to_first_task();
+            app.detail_scroll_offset = 0;
+        }
+        KeyCode::Char('G') => {
+            app.go_to_last_task();
+            app.detail_scroll_offset = 0;
+        }
         KeyCode::Tab | KeyCode::Char('l') | KeyCode::Right => app.next_panel(),
         KeyCode::BackTab | KeyCode::Char('h') | KeyCode::Left => app.previous_panel(),
         KeyCode::Char('1') => app.active_panel = ActivePanel::TaskList,
@@ -128,7 +137,10 @@ fn handle_normal(app: &mut App, key: KeyEvent) -> bool {
                 }
             } else if app.active_panel == ActivePanel::Pomodoro {
                 if let Some(p) = app.pomodoro.profiles.get(app.pomodoro.active_profile_index) {
-                    app.input_buffer = format!("{} {} {} {}", p.name, p.work_duration, p.short_break, p.long_break);
+                    app.input_buffer = format!(
+                        "{} {} {} {}",
+                        p.name, p.work_duration, p.short_break, p.long_break
+                    );
                 }
                 app.input_mode = InputMode::EditingPomodoro;
             }
@@ -142,7 +154,10 @@ fn handle_normal(app: &mut App, key: KeyEvent) -> bool {
         KeyCode::Char('t') => {
             if let Some(task) = app.current_task() {
                 app.input_buffer = match task.due_date {
-                    Some(dt) => dt.with_timezone(&chrono::Local).format("%d/%m/%Y").to_string(),
+                    Some(dt) => dt
+                        .with_timezone(&chrono::Local)
+                        .format("%d/%m/%Y")
+                        .to_string(),
                     None => String::new(),
                 };
                 app.input_mode = InputMode::EditingDate;
@@ -153,7 +168,11 @@ fn handle_normal(app: &mut App, key: KeyEvent) -> bool {
     false
 }
 
-fn handle_text_input(app: &mut App, key: KeyEvent, on_confirm: impl FnOnce(&mut App, String)) -> bool {
+fn handle_text_input(
+    app: &mut App,
+    key: KeyEvent,
+    on_confirm: impl FnOnce(&mut App, String),
+) -> bool {
     match key.code {
         KeyCode::Enter => {
             let text: String = app.input_buffer.drain(..).collect();
@@ -161,7 +180,9 @@ fn handle_text_input(app: &mut App, key: KeyEvent, on_confirm: impl FnOnce(&mut 
             app.input_mode = InputMode::Normal;
         }
         KeyCode::Char(c) => app.input_buffer.push(c),
-        KeyCode::Backspace => { app.input_buffer.pop(); }
+        KeyCode::Backspace => {
+            app.input_buffer.pop();
+        }
         KeyCode::Esc => {
             app.input_buffer.clear();
             app.input_mode = InputMode::Normal;
@@ -194,8 +215,12 @@ fn handle_creating_title(app: &mut App, key: KeyEvent) -> bool {
             }
         }
         KeyCode::Char(c) => app.input_buffer.push(c),
-        KeyCode::Backspace => { app.input_buffer.pop(); }
-        KeyCode::Esc => { app.input_mode = InputMode::Normal; }
+        KeyCode::Backspace => {
+            app.input_buffer.pop();
+        }
+        KeyCode::Esc => {
+            app.input_mode = InputMode::Normal;
+        }
         _ => {}
     }
     false
@@ -208,8 +233,12 @@ fn handle_creating_description(app: &mut App, key: KeyEvent) -> bool {
             app.input_mode = InputMode::CreatingDate;
         }
         KeyCode::Char(c) => app.input_buffer.push(c),
-        KeyCode::Backspace => { app.input_buffer.pop(); }
-        KeyCode::Esc => { app.input_mode = InputMode::Normal; }
+        KeyCode::Backspace => {
+            app.input_buffer.pop();
+        }
+        KeyCode::Esc => {
+            app.input_mode = InputMode::Normal;
+        }
         _ => {}
     }
     false
@@ -222,8 +251,12 @@ fn handle_creating_date(app: &mut App, key: KeyEvent) -> bool {
             app.input_mode = InputMode::CreatingReview;
         }
         KeyCode::Char(c) => app.input_buffer.push(c),
-        KeyCode::Backspace => { app.input_buffer.pop(); }
-        KeyCode::Esc => { app.input_mode = InputMode::Normal; }
+        KeyCode::Backspace => {
+            app.input_buffer.pop();
+        }
+        KeyCode::Esc => {
+            app.input_mode = InputMode::Normal;
+        }
         _ => {}
     }
     false
@@ -233,12 +266,21 @@ fn handle_creating_review(app: &mut App, key: KeyEvent) -> bool {
     match key.code {
         KeyCode::Enter => {
             let rev: String = app.input_buffer.drain(..).collect();
-            app.add_task_full(app.wizard_title.clone(), app.wizard_desc.clone(), app.wizard_date.clone(), rev);
+            app.add_task_full(
+                app.wizard_title.clone(),
+                app.wizard_desc.clone(),
+                app.wizard_date.clone(),
+                rev,
+            );
             app.input_mode = InputMode::Normal;
         }
         KeyCode::Char(c) => app.input_buffer.push(c),
-        KeyCode::Backspace => { app.input_buffer.pop(); }
-        KeyCode::Esc => { app.input_mode = InputMode::Normal; }
+        KeyCode::Backspace => {
+            app.input_buffer.pop();
+        }
+        KeyCode::Esc => {
+            app.input_mode = InputMode::Normal;
+        }
         _ => {}
     }
     false
@@ -256,19 +298,31 @@ fn handle_menu_settings(app: &mut App, key: KeyEvent) -> bool {
             app.input_mode = InputMode::Normal;
         }
         KeyCode::Up | KeyCode::Char('k') => {
-            if app.menu_cursor > 0 { app.menu_cursor -= 1; }
-            else { app.menu_cursor = crate::ui::components::settings_menu::SETTINGS_ITEM_COUNT - 1; }
+            if app.menu_cursor > 0 {
+                app.menu_cursor -= 1;
+            } else {
+                app.menu_cursor = crate::ui::components::settings_menu::SETTINGS_ITEM_COUNT - 1;
+            }
         }
         KeyCode::Down | KeyCode::Char('j') => {
-            app.menu_cursor = (app.menu_cursor + 1) % crate::ui::components::settings_menu::SETTINGS_ITEM_COUNT;
+            app.menu_cursor =
+                (app.menu_cursor + 1) % crate::ui::components::settings_menu::SETTINGS_ITEM_COUNT;
         }
-        KeyCode::Left | KeyCode::Right | KeyCode::Char('h') | KeyCode::Char('l') | KeyCode::Enter | KeyCode::Char(' ') => {
+        KeyCode::Left
+        | KeyCode::Right
+        | KeyCode::Char('h')
+        | KeyCode::Char('l')
+        | KeyCode::Enter
+        | KeyCode::Char(' ') => {
             match app.menu_cursor {
                 // 🎨 APPEARANCE
                 0 => app.next_theme(),
                 1 => {
                     let langs = crate::i18n::Language::all();
-                    let current_idx = langs.iter().position(|l| *l == app.settings.language).unwrap_or(0);
+                    let current_idx = langs
+                        .iter()
+                        .position(|l| *l == app.settings.language)
+                        .unwrap_or(0);
                     let next_idx = (current_idx + 1) % langs.len();
                     app.set_language(langs[next_idx]);
                 }
@@ -281,8 +335,16 @@ fn handle_menu_settings(app: &mut App, key: KeyEvent) -> bool {
                     let _ = app.save_settings();
                 }
                 4 => {
-                    app.settings.startup_with_windows = !app.settings.startup_with_windows;
-                    let _ = app.save_settings();
+                    let enabled = !app.settings.startup_with_windows;
+                    match crate::utils::startup::set_startup_with_os(enabled) {
+                        Ok(()) => {
+                            app.settings.startup_with_windows = enabled;
+                            let _ = app.save_settings();
+                        }
+                        Err(err) => {
+                            app.status_message = Some(err);
+                        }
+                    }
                 }
                 // 🔗 SYNC & INTEGRATIONS — open sync submenu
                 5 => {
@@ -320,8 +382,11 @@ fn handle_menu_sync(app: &mut App, key: KeyEvent) -> bool {
             app.input_mode = InputMode::MenuSettings;
         }
         KeyCode::Up | KeyCode::Char('k') => {
-            if app.menu_cursor > 0 { app.menu_cursor -= 1; }
-            else { app.menu_cursor = 3; }
+            if app.menu_cursor > 0 {
+                app.menu_cursor -= 1;
+            } else {
+                app.menu_cursor = 3;
+            }
         }
         KeyCode::Down | KeyCode::Char('j') => {
             app.menu_cursor = (app.menu_cursor + 1) % 4;
@@ -350,12 +415,12 @@ fn handle_confirm_update(app: &mut App, key: KeyEvent) -> bool {
                 app.input_mode = InputMode::MenuSettings;
                 return false;
             };
-            
+
             app.status_message = Some(app.t("update.downloading").to_string());
-            
+
             match crate::utils::auto_update::perform_update(&version) {
                 Ok(_v) => {
-                    app.status_message = Some(format!("{}", app.t("update.success")));
+                    app.status_message = Some(app.t("update.success").to_string());
                 }
                 Err(e) => {
                     if e == "unsupported_platform" {
@@ -387,7 +452,9 @@ fn handle_sync_interval_input(app: &mut App, key: KeyEvent) -> bool {
             app.menu_cursor = 3; // back on Notion row
         }
         KeyCode::Char(c) if c.is_ascii_digit() => app.input_buffer.push(c),
-        KeyCode::Backspace => { app.input_buffer.pop(); }
+        KeyCode::Backspace => {
+            app.input_buffer.pop();
+        }
         KeyCode::Esc => {
             app.input_buffer.clear();
             app.input_mode = InputMode::MenuSync;

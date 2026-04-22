@@ -3,9 +3,8 @@ const os = require('os');
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
-const { execSync } = require('child_process');
 
-const VERSION = '1.0.0';
+const VERSION = require('../package.json').version;
 const REPO = 'pfTheTrial/todo-tui';
 const BIN_NAME = process.platform === 'win32' ? 'tdt.exe' : 'tdt';
 const INSTALL_DIR = path.join(__dirname, '..', 'bin');

@@ -1,21 +1,16 @@
-use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 
-pub mod pt_br;
 pub mod en;
 pub mod es;
+pub mod pt_br;
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Default)]
 pub enum Language {
+    #[default]
     PtBr,
     En,
     Es,
-}
-
-impl Default for Language {
-    fn default() -> Self {
-        Language::PtBr
-    }
 }
 
 impl Language {

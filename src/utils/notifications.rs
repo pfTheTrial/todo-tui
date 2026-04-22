@@ -1,10 +1,7 @@
 use notify_rust::Notification;
 
 pub fn send_notification(title: &str, body: &str) {
-    let _ = Notification::new()
-        .summary(title)
-        .body(body)
-        .show();
+    let _ = Notification::new().summary(title).body(body).show();
 }
 
 #[inline]

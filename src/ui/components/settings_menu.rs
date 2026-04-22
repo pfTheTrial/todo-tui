@@ -1,18 +1,20 @@
+use crate::app::App;
 use ratatui::{
     layout::Rect,
-    widgets::{Block, Borders, Paragraph, Clear},
-    Frame,
-    text::{Line, Span},
     style::{Modifier, Style},
+    text::{Line, Span},
+    widgets::{Block, Borders, Clear, Paragraph},
+    Frame,
 };
-use crate::app::App;
 
 // Items: Appearance(2) + System(3) + Sync(1) + Update(1) + Stats(1) = 8
 pub const SETTINGS_ITEM_COUNT: usize = 8;
 
 pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
     let theme = &app.theme;
-    let header_style = Style::default().fg(theme.category_fg).add_modifier(Modifier::BOLD);
+    let header_style = Style::default()
+        .fg(theme.category_fg)
+        .add_modifier(Modifier::BOLD);
     let separator = format!("  {}", "─".repeat(area.width.saturating_sub(6) as usize));
 
     // Items  (index must match input.rs handler)
@@ -22,17 +24,51 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
     // 6: Update tdt   7: Stats
     let items: [(String, String); SETTINGS_ITEM_COUNT] = [
         // 🎨 APPEARANCE
-        (app.t("menu.settings.theme").to_string(),         app.theme.name.clone()),
-        (app.t("menu.settings.language").to_string(),      app.settings.language.code().to_string()),
+        (
+            app.t("menu.settings.theme").to_string(),
+            app.theme.name.clone(),
+        ),
+        (
+            app.t("menu.settings.language").to_string(),
+            app.settings.language.code().to_string(),
+        ),
         // 🔔 SYSTEM
-        (app.t("menu.settings.notif_pomo").to_string(), if app.settings.notifications_enabled { "ON".into() } else { "OFF".into() }),
-        (app.t("menu.settings.notif_tasks").to_string(), if app.settings.task_reminders_enabled { "ON".into() } else { "OFF".into() }),
-        (app.t("menu.settings.startup").to_string(),       if app.settings.startup_with_windows { "ON".into() } else { "OFF".into() }),
+        (
+            app.t("menu.settings.notif_pomo").to_string(),
+            if app.settings.notifications_enabled {
+                "ON".into()
+            } else {
+                "OFF".into()
+            },
+        ),
+        (
+            app.t("menu.settings.notif_tasks").to_string(),
+            if app.settings.task_reminders_enabled {
+                "ON".into()
+            } else {
+                "OFF".into()
+            },
+        ),
+        (
+            app.t("menu.settings.startup").to_string(),
+            if app.settings.startup_with_windows {
+                "ON".into()
+            } else {
+                "OFF".into()
+            },
+        ),
         // 🔗 INTEGRATIONS (→ opens sync submenu)
         (app.t("settings.section.integrations").to_string(), {
             let notion_ok = app.settings.notion_api_key.is_some();
-            format!("{} Notion {}", if notion_ok { "●" } else { "○" },
-                if notion_ok { app.t("menu.sync.configured") } else { app.t("menu.sync.not_configured") })
+            format!(
+                "{} Notion {}",
+                if notion_ok { "●" } else { "○" },
+                if notion_ok {
+                    app.t("menu.sync.configured")
+                } else {
+                    app.t("menu.sync.not_configured")
+                }
+            )
         }),
         // 🔄 UPDATE
         (app.t("menu.settings.update").to_string(), {
@@ -59,34 +95,48 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
         // Section headers
         match i {
             0 => lines.push(Line::from(Span::styled(
-                format!("  {}", app.t("settings.section.appearance")), header_style,
+                format!("  {}", app.t("settings.section.appearance")),
+                header_style,
             ))),
             2 => {
                 lines.push(Line::from(""));
                 lines.push(Line::from(Span::styled(
-                    format!("  {}", app.t("settings.section.system")), header_style,
+                    format!("  {}", app.t("settings.section.system")),
+                    header_style,
                 )));
             }
             5 => {
-                lines.push(Line::from(Span::styled(&separator, Style::default().fg(theme.muted))));
+                lines.push(Line::from(Span::styled(
+                    &separator,
+                    Style::default().fg(theme.muted),
+                )));
             }
             _ => {}
         }
 
         let prefix = if i == app.menu_cursor { " ▸ " } else { "   " };
         let style = if i == app.menu_cursor {
-            Style::default().fg(theme.accent).add_modifier(Modifier::BOLD)
+            Style::default()
+                .fg(theme.accent)
+                .add_modifier(Modifier::BOLD)
         } else {
             Style::default().fg(theme.fg)
         };
 
         if value.is_empty() {
-            lines.push(Line::from(Span::styled(format!("{}{}", prefix, label), style)));
+            lines.push(Line::from(Span::styled(
+                format!("{}{}", prefix, label),
+                style,
+            )));
         } else {
             lines.push(Line::from(vec![
                 Span::styled(format!("{}{}: ", prefix, label), style),
-                Span::styled(value.as_str(),
-                    Style::default().fg(theme.accent_secondary).add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    value.as_str(),
+                    Style::default()
+                        .fg(theme.accent_secondary)
+                        .add_modifier(Modifier::BOLD),
+                ),
             ]));
         }
     }
@@ -96,7 +146,9 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
     if let Some(ref msg) = app.status_message {
         lines.push(Line::from(Span::styled(
             format!("  {}", msg),
-            Style::default().fg(theme.success).add_modifier(Modifier::BOLD),
+            Style::default()
+                .fg(theme.success)
+                .add_modifier(Modifier::BOLD),
         )));
     }
 
@@ -112,7 +164,9 @@ pub fn draw(f: &mut Frame, app: &mut App, area: Rect) {
 
     f.render_widget(Clear, area);
     f.render_widget(
-        Paragraph::new(lines).block(block).style(Style::default().bg(theme.bg)),
+        Paragraph::new(lines)
+            .block(block)
+            .style(Style::default().bg(theme.bg)),
         area,
     );
 }

@@ -57,14 +57,17 @@ jobs:
           cp target/${{ matrix.target }}/release/tdt ./todo-tui
           mv ./todo-tui ./${{ matrix.name }}
           chmod +x ./${{ matrix.name }}
+          shasum -a 256 ./${{ matrix.name }} > ./${{ matrix.name }}.sha256
 
       - name: Prepare Artifact (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           cp target/${{ matrix.target }}/release/tdt.exe ./${{ matrix.name }}
+          certutil -hashfile ./${{ matrix.name }} SHA256 | Select-Object -Skip 1 -First 1 | ForEach-Object { "$($_.Trim().ToLower())  ${{ matrix.name }}" } | Set-Content ./${{ matrix.name }}.sha256
 
       - name: Upload binaries to release
         uses: softprops/action-gh-release@v2
         with:
           files: |
             ${{ matrix.name }}
+            ${{ matrix.name }}.sha256

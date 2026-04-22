@@ -26,25 +26,34 @@ pub fn check_for_update() -> Option<UpdateInfo> {
     let api_url = format!("https://api.github.com/repos/{}/releases/latest", repo);
 
     let agent = ureq::Agent::new_with_defaults();
-    let mut response = agent.get(&api_url)
+    let mut response = agent
+        .get(&api_url)
         .header("User-Agent", "tdt-update-checker")
         .header("Accept", "application/vnd.github.v3+json")
         .call()
         .ok()?;
 
     let body: serde_json::Value = response.body_mut().read_json().ok()?;
-    
-    let latest_tag = body["tag_name"].as_str().unwrap_or("").trim_start_matches('v').to_string();
+
+    let latest_tag = body["tag_name"]
+        .as_str()
+        .unwrap_or("")
+        .trim_start_matches('v')
+        .to_string();
     let html_url = body["html_url"].as_str().unwrap_or("").to_string();
 
     let platform_asset = crate::utils::auto_update::get_platform_asset_name();
-    let has_valid_asset = body["assets"].as_array()
-        .map(|assets| assets.iter().any(|a| a["name"].as_str().unwrap_or("") == platform_asset))
+    let has_valid_asset = body["assets"]
+        .as_array()
+        .map(|assets| {
+            assets
+                .iter()
+                .any(|a| a["name"].as_str().unwrap_or("") == platform_asset)
+        })
         .unwrap_or(false);
 
-    let has_update = !latest_tag.is_empty()
-        && semver_gt(&latest_tag, &current_version)
-        && has_valid_asset;
+    let has_update =
+        !latest_tag.is_empty() && semver_gt(&latest_tag, &current_version) && has_valid_asset;
 
     Some(UpdateInfo {
         current: current_version,
@@ -52,4 +61,17 @@ pub fn check_for_update() -> Option<UpdateInfo> {
         url: html_url,
         has_update,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::semver_gt;
+
+    #[test]
+    fn compares_semver_numerically() {
+        assert!(semver_gt("1.10.0", "1.9.9"));
+        assert!(semver_gt("2.0.0", "1.99.99"));
+        assert!(!semver_gt("1.0.2", "1.0.2"));
+        assert!(!semver_gt("1.0.1", "1.0.2"));
+    }
 }

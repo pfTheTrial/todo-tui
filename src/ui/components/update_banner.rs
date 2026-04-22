@@ -1,10 +1,10 @@
+use crate::app::App;
 use ratatui::{
     layout::Rect,
     style::{Modifier, Style},
     widgets::Paragraph,
     Frame,
 };
-use crate::app::App;
 
 pub fn draw(f: &mut Frame, app: &App, area: Rect) {
     if let Some(ref info) = app.update_info {
@@ -15,11 +15,12 @@ pub fn draw(f: &mut Frame, app: &App, area: Rect) {
                 app.t("update.available"),
                 app.t("update.press_key")
             );
-            let banner = Paragraph::new(text)
-                .style(Style::default()
+            let banner = Paragraph::new(text).style(
+                Style::default()
                     .bg(app.theme.accent)
                     .fg(app.theme.bg)
-                    .add_modifier(Modifier::BOLD));
+                    .add_modifier(Modifier::BOLD),
+            );
             f.render_widget(banner, area);
         }
     }

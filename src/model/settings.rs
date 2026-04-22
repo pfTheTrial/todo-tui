@@ -1,5 +1,5 @@
-use serde::{Deserialize, Serialize};
 use crate::i18n::Language;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AppSettings {
@@ -12,12 +12,16 @@ pub struct AppSettings {
     pub notion_database_id: Option<String>,
     pub is_first_run: bool,
     #[serde(default = "default_true")]
+    pub sync_enabled: bool,
+    #[serde(default = "default_true")]
     pub task_reminders_enabled: bool,
     #[serde(default)]
     pub last_daily_digest: Option<String>,
 }
 
-fn default_true() -> bool { true }
+fn default_true() -> bool {
+    true
+}
 
 impl Default for AppSettings {
     fn default() -> Self {
@@ -30,6 +34,7 @@ impl Default for AppSettings {
             notion_api_key: None,
             notion_database_id: None,
             is_first_run: true,
+            sync_enabled: true,
             task_reminders_enabled: true,
             last_daily_digest: None,
         }
